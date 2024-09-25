@@ -8,6 +8,7 @@ SummAIze is built using Python as the primary programming language. It leverages
 
 ## launching instructions
 Open 2024-25_GP_14 repository on GitHub. 
+
 https://github.com/Shadenalturki/2024-25_GP_14
 
 • Click on the code button. 
@@ -15,8 +16,11 @@ https://github.com/Shadenalturki/2024-25_GP_14
 • Download .zip file.
 
 • Unzip the file.
+
 • Open Android Studio or Visual Studio Code.
+
 • Click on File > Open > Location of the saved file then click on Ok.
+
 • Turn on an Android Emulator or connect an android mobile to your computer using
 USB.
 
