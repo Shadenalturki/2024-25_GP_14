@@ -8,7 +8,6 @@ SummAIze is built using Python as the primary programming language. It leverages
 
 ## launching instructions
 Open 2024-25_GP_14 repository on GitHub. 
-
 https://github.com/Shadenalturki/2024-25_GP_14
 
 • Click on the code button. 
