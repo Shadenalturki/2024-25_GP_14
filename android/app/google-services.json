@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "922759884909",
+    "project_id": "summ-a-ize-lt6ras",
+    "storage_bucket": "summ-a-ize-lt6ras.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922759884909:android:3f19e645a38eff9d944f64",
+        "android_client_info": {
+          "package_name": "com.company.summAIze"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7NmunbdygI75WTsGeAueOu4Y6_4_NYes"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922759884909:android:046af9db5bbf2133944f64",
+        "android_client_info": {
+          "package_name": "com.mycompany.summaize"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7NmunbdygI75WTsGeAueOu4Y6_4_NYes"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
