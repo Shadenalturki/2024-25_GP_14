@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">922759884909</string>
+    <string name="google_api_key" translatable="false">AIzaSyA7NmunbdygI75WTsGeAueOu4Y6_4_NYes</string>
+    <string name="google_app_id" translatable="false">1:922759884909:android:046af9db5bbf2133944f64</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyA7NmunbdygI75WTsGeAueOu4Y6_4_NYes</string>
+    <string name="google_storage_bucket" translatable="false">summ-a-ize-lt6ras.appspot.com</string>
+    <string name="project_id" translatable="false">summ-a-ize-lt6ras</string>
+</resources>
