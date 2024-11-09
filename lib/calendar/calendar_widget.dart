@@ -1,25 +1,25 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
-import 'calendar2_model.dart';
-export 'calendar2_model.dart';
+import 'calendar_model.dart';
+export 'calendar_model.dart';
 
-class Calendar2Widget extends StatefulWidget {
-  const Calendar2Widget({super.key});
+class CalendarWidget extends StatefulWidget {
+  const CalendarWidget({super.key});
 
   @override
-  State<Calendar2Widget> createState() => _Calendar2WidgetState();
+  State<CalendarWidget> createState() => _CalendarWidgetState();
 }
 
-class _Calendar2WidgetState extends State<Calendar2Widget> {
-  late Calendar2Model _model;
+class _CalendarWidgetState extends State<CalendarWidget> {
+  late CalendarModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => Calendar2Model());
+    _model = createModel(context, () => CalendarModel());
   }
 
   @override

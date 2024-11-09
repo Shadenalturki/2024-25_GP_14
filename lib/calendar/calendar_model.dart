@@ -1,8 +1,8 @@
 import '/flutter_flow/flutter_flow_util.dart';
-import 'calendar2_widget.dart' show Calendar2Widget;
+import 'calendar_widget.dart' show CalendarWidget;
 import 'package:flutter/material.dart';
 
-class Calendar2Model extends FlutterFlowModel<Calendar2Widget> {
+class CalendarModel extends FlutterFlowModel<CalendarWidget> {
   @override
   void initState(BuildContext context) {}
 

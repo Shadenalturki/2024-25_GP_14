@@ -115,11 +115,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               : const ProfileWidget(),
         ),
         FFRoute(
-          name: 'calendar2',
-          path: '/calendar2',
+          name: 'calendar',
+          path: '/calendar',
           builder: (context, params) => params.isEmpty
-              ? const NavBarPage(initialPage: 'calendar2')
-              : const Calendar2Widget(),
+              ? const NavBarPage(initialPage: 'calendar')
+              : const CalendarWidget(),
         ),
         FFRoute(
           name: 'Quiz',

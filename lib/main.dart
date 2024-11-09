@@ -124,7 +124,7 @@ class _NavBarPageState extends State<NavBarPage> {
     final tabs = {
       'profile': const ProfileWidget(),
       'HomePage': const HomePageWidget(),
-      'calendar2': const Calendar2Widget(),
+      'calendar': const CalendarWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 

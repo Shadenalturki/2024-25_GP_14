@@ -5,5 +5,5 @@ export '/summary_quiz/summary_quiz_widget.dart' show SummaryQuizWidget;
 export '/chatbot/chatbot_widget.dart' show ChatbotWidget;
 export '/forgotpassword/forgotpassword_widget.dart' show ForgotpasswordWidget;
 export '/profile/profile_widget.dart' show ProfileWidget;
-export '/calendar2/calendar2_widget.dart' show Calendar2Widget;
+export '/calendar/calendar_widget.dart' show CalendarWidget;
 export '/quiz/quiz_widget.dart' show QuizWidget;
