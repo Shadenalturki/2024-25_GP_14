@@ -125,22 +125,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: 'Quiz',
           path: '/quiz',
           builder: (context, params) => const QuizWidget(),
-        ),
-        FFRoute(
-          name: 'calendar',
-          path: '/calendar',
-          builder: (context, params) => const NavBarPage(
-            initialPage: '',
-            page: CalendarWidget(),
-          ),
-        ),
-        FFRoute(
-          name: 'courses',
-          path: '/courses',
-          builder: (context, params) => const NavBarPage(
-            initialPage: '',
-            page: CoursesWidget(),
-          ),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

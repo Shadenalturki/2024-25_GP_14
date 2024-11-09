@@ -7,5 +7,3 @@ export '/forgotpassword/forgotpassword_widget.dart' show ForgotpasswordWidget;
 export '/profile/profile_widget.dart' show ProfileWidget;
 export '/calendar2/calendar2_widget.dart' show Calendar2Widget;
 export '/quiz/quiz_widget.dart' show QuizWidget;
-export '/calendar/calendar_widget.dart' show CalendarWidget;
-export '/courses/courses_widget.dart' show CoursesWidget;

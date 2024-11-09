@@ -1,7 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'home_page_model.dart';
 export 'home_page_model.dart';
@@ -136,93 +135,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           fit: BoxFit.contain,
                           alignment: const Alignment(-1.0, -1.0),
                         ),
-                      ),
-                    ),
-                    Align(
-                      alignment: const AlignmentDirectional(0.84, 0.06),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/chatbot.png',
-                          width: 230.0,
-                          height: 205.0,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: const AlignmentDirectional(-1.64, 0.05),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/Ellipse_649.png',
-                          width: 200.0,
-                          height: 200.0,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: const AlignmentDirectional(1.13, 1.06),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/Ellipse_650.png',
-                          width: 200.0,
-                          height: 200.0,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: const AlignmentDirectional(-0.84, -0.31),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/My_Message.png',
-                          width: 244.0,
-                          height: 122.0,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: const AlignmentDirectional(-0.08, 0.66),
-                      child: FFButtonWidget(
-                        onPressed: () async {
-                          context.pushNamed('summaryQuiz');
-                        },
-                        text: 'Upload ',
-                        options: FFButtonOptions(
-                          width: 200.0,
-                          height: 97.0,
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
-                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 0.0),
-                          color: const Color(0xFFEEF0EF),
-                          textStyle:
-                              FlutterFlowTheme.of(context).titleSmall.override(
-                                    fontFamily: 'Inter Tight',
-                                    color: const Color(0xFF104036),
-                                    letterSpacing: 0.0,
-                                  ),
-                          elevation: 0.0,
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(60.0),
-                            bottomRight: Radius.circular(60.0),
-                            topLeft: Radius.circular(60.0),
-                            topRight: Radius.circular(60.0),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Align(
-                      alignment: AlignmentDirectional(-0.04, 0.53),
-                      child: Icon(
-                        Icons.file_upload_outlined,
-                        color: Color(0xFF104036),
-                        size: 24.0,
                       ),
                     ),
                     Align(
