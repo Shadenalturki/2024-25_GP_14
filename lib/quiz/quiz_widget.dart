@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'quiz_model.dart';
 export 'quiz_model.dart';
 
@@ -45,33 +44,31 @@ class _QuizWidgetState extends State<QuizWidget> {
           backgroundColor: const Color(0xFF104036),
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
-            borderRadius: 8.0,
-            buttonSize: 40.0,
-            fillColor: const Color(0x01F8B038),
-            icon: FaIcon(
-              FontAwesomeIcons.arrowLeft,
-              color: FlutterFlowTheme.of(context).info,
-              size: 24.0,
+            borderColor: Colors.transparent,
+            borderRadius: 30.0,
+            borderWidth: 1.0,
+            buttonSize: 60.0,
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.white,
+              size: 30.0,
             ),
             onPressed: () async {
-              context.pushNamed('HomePage');
+              context.pop();
             },
           ),
-          title: Align(
-            alignment: const AlignmentDirectional(-1.0, 0.0),
-            child: Text(
-              'SummAIze Notebook',
-              style: FlutterFlowTheme.of(context).headlineMedium.override(
-                    fontFamily: 'Inknut Antiqua',
-                    color: Colors.white,
-                    fontSize: 22.0,
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
+          title: Text(
+            'SummAIze Notebook',
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+                  fontFamily: 'Inknut Antiqua',
+                  color: Colors.white,
+                  fontSize: 22.0,
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           actions: const [],
-          centerTitle: false,
+          centerTitle: true,
           elevation: 2.0,
         ),
         body: SafeArea(

@@ -46,21 +46,20 @@ class _CalendarWidgetState extends State<CalendarWidget>
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: const Color(0xFF104036),
           automaticallyImplyLeading: false,
-          title: Align(
-            alignment: const AlignmentDirectional(0.0, -1.0),
-            child: Text(
-              'Calendar',
-              style: FlutterFlowTheme.of(context).headlineMedium.override(
-                    fontFamily: 'Inter Tight',
-                    letterSpacing: 0.0,
-                  ),
-            ),
+          title: Text(
+            'Calendar',
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+                  fontFamily: 'Inknut Antiqua',
+                  color: Colors.white,
+                  fontSize: 22.0,
+                  letterSpacing: 0.0,
+                ),
           ),
           actions: const [],
-          centerTitle: false,
-          elevation: 0.0,
+          centerTitle: true,
+          elevation: 2.0,
         ),
         body: Column(
           mainAxisSize: MainAxisSize.max,

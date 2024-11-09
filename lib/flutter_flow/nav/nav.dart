@@ -115,11 +115,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               : const ProfileWidget(),
         ),
         FFRoute(
-          name: 'history',
-          path: '/history',
+          name: 'calendar2',
+          path: '/calendar2',
           builder: (context, params) => params.isEmpty
-              ? const NavBarPage(initialPage: 'history')
-              : const HistoryWidget(),
+              ? const NavBarPage(initialPage: 'calendar2')
+              : const Calendar2Widget(),
         ),
         FFRoute(
           name: 'Quiz',
@@ -129,7 +129,18 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'calendar',
           path: '/calendar',
-          builder: (context, params) => const CalendarWidget(),
+          builder: (context, params) => const NavBarPage(
+            initialPage: '',
+            page: CalendarWidget(),
+          ),
+        ),
+        FFRoute(
+          name: 'courses',
+          path: '/courses',
+          builder: (context, params) => const NavBarPage(
+            initialPage: '',
+            page: CoursesWidget(),
+          ),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

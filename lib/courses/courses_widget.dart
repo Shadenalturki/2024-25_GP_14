@@ -2,25 +2,25 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
-import 'history_model.dart';
-export 'history_model.dart';
+import 'courses_model.dart';
+export 'courses_model.dart';
 
-class HistoryWidget extends StatefulWidget {
-  const HistoryWidget({super.key});
+class CoursesWidget extends StatefulWidget {
+  const CoursesWidget({super.key});
 
   @override
-  State<HistoryWidget> createState() => _HistoryWidgetState();
+  State<CoursesWidget> createState() => _CoursesWidgetState();
 }
 
-class _HistoryWidgetState extends State<HistoryWidget> {
-  late HistoryModel _model;
+class _CoursesWidgetState extends State<CoursesWidget> {
+  late CoursesModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => HistoryModel());
+    _model = createModel(context, () => CoursesModel());
 
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
@@ -118,7 +118,7 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                                     color: const Color(0xFF070707),
                                     letterSpacing: 0.0,
                                   ),
-                              hintText: 'Search a history',
+                              hintText: 'Search a course',
                               hintStyle: FlutterFlowTheme.of(context)
                                   .labelMedium
                                   .override(
@@ -186,19 +186,6 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                       ),
                     ],
                   ),
-                ),
-              ),
-              Align(
-                alignment: const AlignmentDirectional(-0.9, 0.0),
-                child: Text(
-                  'History',
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'DM Sans',
-                        color: const Color(0xFF404446),
-                        fontSize: 18.0,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.bold,
-                      ),
                 ),
               ),
               Expanded(

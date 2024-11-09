@@ -1,8 +1,8 @@
 import '/flutter_flow/flutter_flow_util.dart';
-import 'history_widget.dart' show HistoryWidget;
+import 'calendar2_widget.dart' show Calendar2Widget;
 import 'package:flutter/material.dart';
 
-class HistoryModel extends FlutterFlowModel<HistoryWidget> {
+class Calendar2Model extends FlutterFlowModel<Calendar2Widget> {
   ///  State fields for stateful widgets in this page.
 
   // State field(s) for TextField widget.

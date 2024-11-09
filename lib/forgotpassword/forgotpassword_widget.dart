@@ -41,37 +41,36 @@ class _ForgotpasswordWidgetState extends State<ForgotpasswordWidget> {
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: const Color(0xFF104036),
         automaticallyImplyLeading: false,
         leading: FlutterFlowIconButton(
           borderColor: Colors.transparent,
           borderRadius: 30.0,
           borderWidth: 1.0,
           buttonSize: 60.0,
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_rounded,
-            color: FlutterFlowTheme.of(context).primaryText,
+            color: Colors.white,
             size: 30.0,
           ),
           onPressed: () async {
-            context.pushNamed('SignUp');
+            context.pop();
           },
         ),
-        title: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),
-          child: Text(
-            'Back',
-            style: FlutterFlowTheme.of(context).displaySmall.override(
-                  fontFamily: 'Inter Tight',
-                  color: FlutterFlowTheme.of(context).primaryText,
-                  fontSize: 16.0,
-                  letterSpacing: 0.0,
-                ),
-          ),
+        title: Text(
+          'Forgot Password',
+          textAlign: TextAlign.center,
+          style: FlutterFlowTheme.of(context).headlineMedium.override(
+                fontFamily: 'Inknut Antiqua',
+                color: Colors.white,
+                fontSize: 22.0,
+                letterSpacing: 0.0,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         actions: const [],
-        centerTitle: false,
-        elevation: 0.0,
+        centerTitle: true,
+        elevation: 2.0,
       ),
       body: Align(
         alignment: const AlignmentDirectional(0.0, -1.0),
@@ -130,16 +129,6 @@ class _ForgotpasswordWidgetState extends State<ForgotpasswordWidget> {
                     ),
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 0.0),
-                child: Text(
-                  'Forgot Password',
-                  style: FlutterFlowTheme.of(context).headlineMedium.override(
-                        fontFamily: 'Inter Tight',
-                        letterSpacing: 0.0,
-                      ),
-                ),
-              ),
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(16.0, 4.0, 16.0, 4.0),
                 child: Text(
