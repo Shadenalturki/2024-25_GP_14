@@ -1,0 +1,26 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.pub-cache/
+.packages
+pubspec.lock
+
+# Build outputs
+/build/
+/ios/Flutter/Flutter.framework/
+/ios/Flutter/Flutter.podspec
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+.idea/
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# MacOS related files
+.DS_Store
+
+# Android related
+android/app/debug
+android/app/profile
+android/app/release
