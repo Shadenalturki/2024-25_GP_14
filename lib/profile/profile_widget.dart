@@ -3,8 +3,12 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'profile_model.dart';
 export 'profile_model.dart';
+import '../sign_up/sign_up_widget.dart'; // Ensure correct import path
+import '/flutter_flow/flutter_flow_theme.dart';
 
 class ProfileWidget extends StatefulWidget {
   const ProfileWidget({super.key});
@@ -27,7 +31,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -41,222 +44,144 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         appBar: AppBar(
           backgroundColor: const Color(0xFF104036),
           automaticallyImplyLeading: false,
-          title: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 60.0,
-                height: 60.0,
-                clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
-                child: Image.asset(
-                  'assets/images/S_logoo.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Align(
-                alignment: const AlignmentDirectional(0.0, 0.0),
-                child: Text(
-                  'SummAIze ',
-                  textAlign: TextAlign.center,
-                  style: FlutterFlowTheme.of(context).headlineMedium.override(
-                        fontFamily: 'Inknut Antiqua',
-                        color: Colors.white,
-                        fontSize: 22.0,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ),
-            ],
+          title: Center(
+            child: Text(
+              'Profile',
+              style: FlutterFlowTheme.of(context).headlineMedium.override(
+                    fontFamily: 'Inknut Antiqua',
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+            ),
           ),
-          actions: const [],
-          centerTitle: false,
-          elevation: 2.0,
+          elevation: 2,
         ),
         body: SafeArea(
-          top: true,
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
+          child: Column(
             children: [
               Row(
-                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  Flexible(
+                    child: Container(
+                      height: 100,
+                      child: Stack(
+                        alignment: Alignment.center,
                         children: [
-                          Flexible(
-                            child: SizedBox(
-                              height: 100.0,
-                              child: Stack(
-                                alignment: const AlignmentDirectional(0.0, 0.0),
-                                children: [
-                                  Align(
-                                    alignment: const AlignmentDirectional(0.0, 0.0),
-                                    child: Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 8.0, 0.0),
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: Image.asset(
-                                          'assets/images/My_Message.png',
-                                          width: 180.0,
-                                          height: 94.0,
-                                          fit: BoxFit.contain,
-                                          alignment: const Alignment(0.0, -0.5),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment:
-                                        const AlignmentDirectional(-0.18, -0.37),
-                                    child: Text(
-                                      'Account Information',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Inter',
-                                            color: Colors.white,
-                                            fontSize: 15.0,
-                                            letterSpacing: 0.0,
-                                          ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Align(
-                            alignment: const AlignmentDirectional(-15.7, 0.0),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(8),
                               child: Image.asset(
-                                'assets/images/chatbot.png',
-                                width: 180.0,
-                                height: 180.0,
-                                fit: BoxFit.cover,
+                                'assets/images/My_Message.png',
+                                width: 180,
+                                height: 94,
+                                fit: BoxFit.contain,
+                                alignment: const Alignment(0, -0.5),
                               ),
                             ),
                           ),
-                        ]
-                            .divide(const SizedBox(width: 0.0))
-                            .addToStart(const SizedBox(width: 6.0))
-                            .addToEnd(const SizedBox(width: 6.0)),
-                      ),
-                      Container(
-                        width: 353.0,
-                        height: 66.0,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1F1F1),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(25.0),
-                            bottomRight: Radius.circular(25.0),
-                            topLeft: Radius.circular(25.0),
-                            topRight: Radius.circular(25.0),
-                          ),
-                        ),
-                        child: Align(
-                          alignment: const AlignmentDirectional(-0.9, 0.0),
-                          child: AuthUserStreamWidget(
-                            builder: (context) => Text(
-                              currentUserDisplayName,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'DM Sans',
-                                    color: const Color(0xFF202325),
-                                    fontSize: 20.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                  ),
+                          const Align(
+                            alignment: Alignment(-0.18, -0.37),
+                            child: Text(
+                              'Account Information',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                      Container(
-                        width: 353.0,
-                        height: 66.0,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1F1F1),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(25.0),
-                            bottomRight: Radius.circular(25.0),
-                            topLeft: Radius.circular(25.0),
-                            topRight: Radius.circular(25.0),
-                          ),
-                          shape: BoxShape.rectangle,
-                        ),
-                        child: Align(
-                          alignment: const AlignmentDirectional(-0.9, 0.0),
-                          child: Text(
-                            currentUserEmail,
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  fontFamily: 'DM Sans',
-                                  color: const Color(0xFF202325),
-                                  fontSize: 20.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: const AlignmentDirectional(0.0, 0.0),
-                        child: FFButtonWidget(
-                          onPressed: () async {
-                            context.pushNamed('SignUp');
-                          },
-                          text: 'Log out',
-                          icon: const Icon(
-                            Icons.login_outlined,
-                            size: 25.0,
-                          ),
-                          options: FFButtonOptions(
-                            width: 190.0,
-                            height: 53.0,
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            color: const Color(0xFF104036),
-                            textStyle: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .override(
-                                  fontFamily: 'DM Sans',
-                                  color: const Color(0xFFF8F6F6),
-                                  fontSize: 18.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                            elevation: 0.0,
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(25.0),
-                              bottomRight: Radius.circular(25.0),
-                              topLeft: Radius.circular(25.0),
-                              topRight: Radius.circular(25.0),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ]
-                        .divide(const SizedBox(height: 8.0))
-                        .addToStart(const SizedBox(height: 5.0)),
+                    ),
+                  ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      'assets/images/chatbot.png',
+                      width: 180,
+                      height: 180,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ],
               ),
+              _buildUserInfoTile(currentUserDisplayName),
+              _buildUserInfoTile(currentUserEmail),
+              const SizedBox(height: 8),
+              FFButtonWidget(
+                onPressed: () async {
+                  bool confirmDialogResponse = await showDialog<bool>(
+                        context: context,
+                        builder: (alertDialogContext) {
+                          return AlertDialog(
+                            title: const Text('Confirm Logout'),
+                            content:
+                                const Text('Are you sure you want to log out?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(alertDialogContext, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  Navigator.pop(alertDialogContext, true);
+                                  await authManager.signOut();
+                                  GoRouter.of(context).go('/signUp');
+                                },
+                                child: const Text('Confirm'),
+                              ),
+                            ],
+                          );
+                        },
+                      ) ??
+                      false;
+                },
+                text: 'Log out',
+                icon: const Icon(
+                  Icons.login_outlined,
+                  size: 25,
+                ),
+                options: FFButtonOptions(
+                  width: 190,
+                  height: 53,
+                  color: const Color(0xFF104036),
+                  textStyle: const TextStyle(
+                    fontFamily: 'DM Sans',
+                    color: Color(0xFFF8F6F6),
+                    fontSize: 18,
+                  ),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserInfoTile(String info) {
+    return Container(
+      width: 353,
+      height: 66,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F1F1),
+        borderRadius: BorderRadius.circular(25),
+      ),
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        info,
+        style: const TextStyle(
+          fontFamily: 'DM Sans',
+          color: Color(0xFF202325),
+          fontSize: 20,
         ),
       ),
     );
