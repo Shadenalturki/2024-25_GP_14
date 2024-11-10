@@ -24,20 +24,27 @@ class SignUpModel extends FlutterFlowModel<SignUpWidget> {
   FocusNode? userNameFocusNode;
   TextEditingController? userNameTextController;
   String? Function(BuildContext, String?)? userNameTextControllerValidator;
+
   // State field(s) for email widget.
   FocusNode? emailFocusNode;
   TextEditingController? emailTextController;
   String? Function(BuildContext, String?)? emailTextControllerValidator;
+
   // State field(s) for passwordSignUp widget.
   FocusNode? passwordSignUpFocusNode;
   TextEditingController? passwordSignUpTextController;
   late bool passwordSignUpVisibility;
-  String? Function(BuildContext, String?)?
-      passwordSignUpTextControllerValidator;
+  String? Function(BuildContext, String?)? passwordSignUpTextControllerValidator;
+
+  // State field(s) for confirmPassword widget.
+  FocusNode? confirmPasswordFocusNode;
+  TextEditingController? confirmPasswordTextController;
+
   // State field(s) for emailAddress widget.
   FocusNode? emailAddressFocusNode;
   TextEditingController? emailAddressTextController;
   String? Function(BuildContext, String?)? emailAddressTextControllerValidator;
+
   // State field(s) for password widget.
   FocusNode? passwordFocusNode;
   TextEditingController? passwordTextController;
@@ -48,11 +55,16 @@ class SignUpModel extends FlutterFlowModel<SignUpWidget> {
   void initState(BuildContext context) {
     passwordSignUpVisibility = false;
     passwordVisibility = false;
+
+    // Initialize confirmPassword fields
+    confirmPasswordFocusNode = FocusNode();
+    confirmPasswordTextController = TextEditingController();
   }
 
   @override
   void dispose() {
     tabBarController?.dispose();
+
     userNameFocusNode?.dispose();
     userNameTextController?.dispose();
 
@@ -61,6 +73,9 @@ class SignUpModel extends FlutterFlowModel<SignUpWidget> {
 
     passwordSignUpFocusNode?.dispose();
     passwordSignUpTextController?.dispose();
+
+    confirmPasswordFocusNode?.dispose();
+    confirmPasswordTextController?.dispose();
 
     emailAddressFocusNode?.dispose();
     emailAddressTextController?.dispose();

@@ -71,6 +71,10 @@ class _SignUpWidgetState extends State<SignUpWidget>
 
     _model.passwordSignUpFocusNode ??= FocusNode();
 
+    _model.confirmPasswordTextController ??= TextEditingController();
+    _model.confirmPasswordFocusNode ??= FocusNode();
+
+
     _model.emailAddressTextController ??= TextEditingController();
 
     _model.emailAddressFocusNode ??= FocusNode();
@@ -159,36 +163,52 @@ class _SignUpWidgetState extends State<SignUpWidget>
 
   // Validate inputs
 
-  String? validateInputs() {
-    String username = _model.userNameTextController.text.trim();
+ String? validateInputs() {
+  String username = _model.userNameTextController.text.trim();
+  String email = _model.emailTextController.text.trim();
+  String password = _model.passwordSignUpTextController.text;
+  String confirmPassword = _model.confirmPasswordTextController.text;
 
-    String email = _model.emailTextController.text.trim();
-
-    String password = _model.passwordSignUpTextController.text;
-
-    // Check username constraints
-
-    if (username.isEmpty ||
-        username.length < 3 ||
-        RegExp(r'^\d+$').hasMatch(username) ||
-        username.contains(' ')) {
-      return 'Invalid username. It must be at least 3 characters long, contain no spaces, and cannot consist only of digits.';
-    }
-
-    // Check email format
-
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-      return 'Please enter a valid email address.';
-    }
-
-    // Check password constraints
-
-    if (password.length < 8 || password.contains(' ')) {
-      return 'Password must be at least 8 characters long and cannot contain spaces.';
-    }
-
-    return null; // No errors
+  // Check if username is empty
+  if (username.isEmpty) {
+    return 'Name cannot be empty.';
   }
+
+  // Check username constraints
+  if (username.length < 3 || RegExp(r'^\d+$').hasMatch(username) || username.contains(' ')) {
+    return 'Invalid username. It must be at least 3 characters long, contain no spaces, and cannot consist only of digits.';
+  }
+
+  // Check if email is empty
+  if (email.isEmpty) {
+    return 'Email cannot be empty.';
+  }
+
+  // Check email format
+  if (!RegExp(r'^[a-zA-Z0-9._%+-]+@(gmail\.com|hotmail\.com)$').hasMatch(email)) {
+    return 'Please enter a valid email address.';
+  }
+
+  // Check if password is empty
+  if (password.isEmpty) {
+    return 'Password cannot be empty.';
+  }
+
+  // Check password constraints
+  if (password.length < 8 || password.contains(' ')) {
+    return 'Password must be at least 8 characters long and cannot contain spaces.';
+  }
+
+  // Check confirm password
+  if (confirmPassword.isEmpty) {
+    return 'Please confirm your password.';
+  }
+  if (password != confirmPassword) {
+    return 'Passwords do not match.';
+  }
+
+  return null; // No errors
+}
 
   @override
   Widget build(BuildContext context) {
@@ -347,7 +367,7 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                             .fromSTEB(0.0, 4.0,
                                                                 0.0, 24.0),
                                                     child: Text(
-                                                      'Fill out the information below in order SummAIze.',
+                                                      'Fill out the information below in order to join SummAIze.',
                                                       textAlign:
                                                           TextAlign.start,
                                                       style: FlutterFlowTheme
@@ -728,6 +748,51 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                       ),
                                                     ),
                                                   ),
+                                                  Padding(
+  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+  child: Container(
+    width: double.infinity,
+    child: TextFormField(
+      controller: _model.confirmPasswordTextController,
+      focusNode: _model.confirmPasswordFocusNode,
+      obscureText: !_model.passwordSignUpVisibility,
+      decoration: InputDecoration(
+        labelText: 'Confirm Password',
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).alternate,
+            width: 2.0,
+          ),
+          borderRadius: BorderRadius.circular(40.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).primary,
+            width: 2.0,
+          ),
+          borderRadius: BorderRadius.circular(40.0),
+        ),
+        filled: true,
+        fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+        contentPadding: EdgeInsets.all(24.0),
+      ),
+      style: FlutterFlowTheme.of(context).bodyLarge.override(
+        fontFamily: 'Inter',
+        letterSpacing: 0.0,
+        color: const Color.fromARGB(255, 29, 33, 29),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please confirm your password.';
+        }
+        if (value != _model.passwordSignUpTextController.text) {
+          return 'Passwords do not match.';
+        }
+        return null;
+      },
+    ),
+  ),
+),
                                                   Align(
                                                     alignment:
                                                         AlignmentDirectional(
@@ -741,240 +806,76 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                   0.0,
                                                                   16.0),
                                                       child: FFButtonWidget(
-                                                        onPressed: () async {
-                                                          // Validate fields
+                                                       onPressed: () async {
+  // Run input validation
+  String? validationError = validateInputs();
+  if (validationError != null) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Validation Error"),
+          content: Text(validationError),
+          actions: [
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+    return; // Stop further execution if validation fails
+  }
 
-                                                          String userName = _model
-                                                              .userNameTextController
-                                                              .text;
+  // Proceed with account creation if validation passed
+  String userName = _model.userNameTextController.text;
+  String email = _model.emailTextController.text;
+  String password = _model.passwordSignUpTextController.text;
 
-                                                          String email = _model
-                                                              .emailTextController
-                                                              .text;
+  // Hash the password
+  String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
-                                                          String password = _model
-                                                              .passwordSignUpTextController
-                                                              .text;
+  // Create account
+  GoRouter.of(context).prepareAuthEvent();
+  final user = await authManager.createAccountWithEmail(
+    context,
+    email,
+    password,
+  );
 
-                                                          if (userName
-                                                              .isEmpty) {
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (BuildContext
-                                                                      context) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      "Validation Error"),
-                                                                  content: Text(
-                                                                      "Name cannot be empty."),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      child: Text(
-                                                                          "OK"),
-                                                                      onPressed:
-                                                                          () {
-                                                                        Navigator.of(context)
-                                                                            .pop();
-                                                                      },
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
+  // Check if the user creation failed due to existing email
+  if (user == null) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Registration Error"),
+          content: Text("This email is already registered. Please use a different email."),
+          actions: [
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+    return;
+  }
 
-                                                            return;
-                                                          }
+  // Save user data in Firestore
+  await UsersRecord.collection.doc(user.uid).update(createUsersRecordData(
+    email: email,
+    displayName: userName,
+    password: hashedPassword,
+  ));
 
-                                                          if (email.isEmpty) {
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (BuildContext
-                                                                      context) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      "Validation Error"),
-                                                                  content: Text(
-                                                                      "Email cannot be empty."),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      child: Text(
-                                                                          "OK"),
-                                                                      onPressed:
-                                                                          () {
-                                                                        Navigator.of(context)
-                                                                            .pop();
-                                                                      },
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
 
-                                                            return;
-                                                          }
-
-                                                          if (password
-                                                              .isEmpty) {
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (BuildContext
-                                                                      context) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      "Validation Error"),
-                                                                  content: Text(
-                                                                      "Password cannot be empty."),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      child: Text(
-                                                                          "OK"),
-                                                                      onPressed:
-                                                                          () {
-                                                                        Navigator.of(context)
-                                                                            .pop();
-                                                                      },
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
-
-                                                            return;
-                                                          }
-
-                                                          // Validate email format and prefix
-
-                                                          if (!RegExp(
-                                                                  r'^[a-zA-Z0-9._%+-]+@(gmail\.com|hotmail\.com)$')
-                                                              .hasMatch(
-                                                                  email)) {
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (BuildContext
-                                                                      context) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      "Validation Error"),
-                                                                  content: Text(
-                                                                      "Please enter a valid email address."),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      child: Text(
-                                                                          "OK"),
-                                                                      onPressed:
-                                                                          () {
-                                                                        Navigator.of(context)
-                                                                            .pop();
-                                                                      },
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
-
-                                                            return;
-                                                          }
-
-                                                          // Validate password requirements
-
-                                                          if (password.length <
-                                                                  8 ||
-                                                              password.contains(
-                                                                  ' ')) {
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (BuildContext
-                                                                      context) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      "Validation Error"),
-                                                                  content: Text(
-                                                                      "Password must be at least 8 characters long and contain no spaces."),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      child: Text(
-                                                                          "OK"),
-                                                                      onPressed:
-                                                                          () {
-                                                                        Navigator.of(context)
-                                                                            .pop();
-                                                                      },
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
-
-                                                            return;
-                                                          }
-
-                                                          String
-                                                              hashedPassword =
-                                                              BCrypt.hashpw(
-                                                                  password,
-                                                                  BCrypt
-                                                                      .gensalt());
-
-                                                          // Proceed with account creation
-
-                                                          GoRouter.of(context)
-                                                              .prepareAuthEvent();
-
-                                                          final user =
-                                                              await authManager
-                                                                  .createAccountWithEmail(
-                                                            context,
-                                                            email,
-                                                            password,
-                                                          );
-
-                                                          // Check if the user creation failed due to existing email
-
-                                                          if (user == null) {
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (BuildContext
-                                                                      context) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      "Registration Error"),
-                                                                  content: Text(
-                                                                      "This email is already registered. Please use a different email."),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      child: Text(
-                                                                          "OK"),
-                                                                      onPressed:
-                                                                          () {
-                                                                        Navigator.of(context)
-                                                                            .pop();
-                                                                      },
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
-
-                                                            return;
-                                                          }
-
-                                                          await UsersRecord
-                                                              .collection
-                                                              .doc(user.uid)
-                                                              .update(
-                                                                  createUsersRecordData(
-                                                                email: email,
-                                                                displayName:
-                                                                    userName,
-                                                                password:
-                                                                    hashedPassword,
-                                                              ));
 
                                                           context.goNamedAuth(
                                                               'HomePage',
