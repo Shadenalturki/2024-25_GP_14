@@ -2,7 +2,6 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'chatbot_model.dart';
 export 'chatbot_model.dart';
 
@@ -42,19 +41,15 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
         key: scaffoldKey,
         backgroundColor: const Color(0xFFFCFDFE),
         appBar: AppBar(
-          backgroundColor: const Color(0xFFFEFEFE),
+          backgroundColor: const Color(0xFF104036),
           automaticallyImplyLeading: false,
           leading: Align(
             alignment: const AlignmentDirectional(0.0, 0.0),
             child: FlutterFlowIconButton(
-              borderColor: const Color(0xFFE3E5E5),
-              borderRadius: 80.0,
-              borderWidth: 2.0,
-              buttonSize: 40.0,
-              fillColor: const Color(0x00F8B038),
-              icon: const FaIcon(
-                FontAwesomeIcons.arrowLeft,
-                color: Color(0xFF72777A),
+              buttonSize: 60.0,
+              icon: const Icon(
+                Icons.arrow_back_rounded,
+                color: Colors.white,
                 size: 24.0,
               ),
               onPressed: () async {
@@ -62,53 +57,38 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
               },
             ),
           ),
-          title: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: Image.asset(
-                  'assets/images/ai-assistant.png',
-                  width: 57.0,
-                  height: 50.0,
-                  fit: BoxFit.contain,
+          title: Align(
+            alignment: const AlignmentDirectional(0.0, -1.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.asset(
+                    'assets/images/ai-assistant.png',
+                    width: 57.0,
+                    height: 50.0,
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Text(
-                    'TutorBot',
-                    style: FlutterFlowTheme.of(context).headlineMedium.override(
-                          fontFamily: 'Inter Tight',
-                          color: const Color(0xFF202325),
-                          fontSize: 20.0,
-                          letterSpacing: 0.0,
-                        ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      const Icon(
-                        Icons.circle_rounded,
-                        color: Color(0xFF7DDE86),
-                        size: 8.0,
-                      ),
-                      Text(
-                        'Always active',
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Inter',
-                              color: const Color(0xFF72777A),
-                              letterSpacing: 0.0,
-                            ),
-                      ),
-                    ]
-                        .divide(const SizedBox(width: 4.0))
-                        .addToStart(const SizedBox(width: 7.0)),
-                  ),
-                ],
-              ),
-            ],
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Text(
+                      'TutorBot',
+                      textAlign: TextAlign.center,
+                      style:
+                          FlutterFlowTheme.of(context).headlineMedium.override(
+                                fontFamily: 'Inknut Antiqua',
+                                color: Colors.white,
+                                fontSize: 22.0,
+                                letterSpacing: 0.0,
+                              ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           actions: const [],
           centerTitle: false,

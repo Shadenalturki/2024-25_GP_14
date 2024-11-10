@@ -122,9 +122,9 @@ class _NavBarPageState extends State<NavBarPage> {
   @override
   Widget build(BuildContext context) {
     final tabs = {
-      'profile': const ProfileWidget(),
-      'HomePage': const HomePageWidget(),
       'calendar': const CalendarWidget(),
+      'HomePage': const HomePageWidget(),
+      'profile': const ProfileWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
@@ -149,8 +149,8 @@ class _NavBarPageState extends State<NavBarPage> {
         haptic: false,
         tabs: const [
           GButton(
-            icon: Icons.person,
-            text: 'Profile',
+            icon: Icons.calendar_today,
+            text: 'Calendar',
             iconSize: 24.0,
           ),
           GButton(
@@ -159,8 +159,8 @@ class _NavBarPageState extends State<NavBarPage> {
             iconSize: 24.0,
           ),
           GButton(
-            icon: Icons.calendar_today,
-            text: 'Calendar',
+            icon: Icons.person,
+            text: 'Profile',
             iconSize: 24.0,
           )
         ],

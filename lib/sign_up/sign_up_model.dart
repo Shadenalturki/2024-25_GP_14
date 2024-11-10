@@ -1,16 +1,6 @@
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
 import 'sign_up_widget.dart' show SignUpWidget;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class SignUpModel extends FlutterFlowModel<SignUpWidget> {
   ///  State fields for stateful widgets in this page.
@@ -24,27 +14,20 @@ class SignUpModel extends FlutterFlowModel<SignUpWidget> {
   FocusNode? userNameFocusNode;
   TextEditingController? userNameTextController;
   String? Function(BuildContext, String?)? userNameTextControllerValidator;
-
   // State field(s) for email widget.
   FocusNode? emailFocusNode;
   TextEditingController? emailTextController;
   String? Function(BuildContext, String?)? emailTextControllerValidator;
-
   // State field(s) for passwordSignUp widget.
   FocusNode? passwordSignUpFocusNode;
   TextEditingController? passwordSignUpTextController;
   late bool passwordSignUpVisibility;
-  String? Function(BuildContext, String?)? passwordSignUpTextControllerValidator;
-
-  // State field(s) for confirmPassword widget.
-  FocusNode? confirmPasswordFocusNode;
-  TextEditingController? confirmPasswordTextController;
-
+  String? Function(BuildContext, String?)?
+      passwordSignUpTextControllerValidator;
   // State field(s) for emailAddress widget.
   FocusNode? emailAddressFocusNode;
   TextEditingController? emailAddressTextController;
   String? Function(BuildContext, String?)? emailAddressTextControllerValidator;
-
   // State field(s) for password widget.
   FocusNode? passwordFocusNode;
   TextEditingController? passwordTextController;
@@ -55,16 +38,11 @@ class SignUpModel extends FlutterFlowModel<SignUpWidget> {
   void initState(BuildContext context) {
     passwordSignUpVisibility = false;
     passwordVisibility = false;
-
-    // Initialize confirmPassword fields
-    confirmPasswordFocusNode = FocusNode();
-    confirmPasswordTextController = TextEditingController();
   }
 
   @override
   void dispose() {
     tabBarController?.dispose();
-
     userNameFocusNode?.dispose();
     userNameTextController?.dispose();
 
@@ -73,9 +51,6 @@ class SignUpModel extends FlutterFlowModel<SignUpWidget> {
 
     passwordSignUpFocusNode?.dispose();
     passwordSignUpTextController?.dispose();
-
-    confirmPasswordFocusNode?.dispose();
-    confirmPasswordTextController?.dispose();
 
     emailAddressFocusNode?.dispose();
     emailAddressTextController?.dispose();
