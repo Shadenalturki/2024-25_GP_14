@@ -21,8 +21,11 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  bcrypt: 1.1.3
   flutter:
     sdk: flutter
+  table_calendar: ^3.0.0 # Use the latest version
+
   flutter_localizations:
     sdk: flutter
   flutter_web_plugins:
@@ -137,6 +140,7 @@ flutter:
     - assets/rive_animations/
     - assets/pdfs/
     - assets/jsons/
+
 
 
 
