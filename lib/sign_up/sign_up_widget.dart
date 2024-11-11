@@ -309,10 +309,10 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                     child: TabBar(
                                       isScrollable: true,
                                       labelColor: FlutterFlowTheme.of(context)
-                                          .primaryText,
+                                          .secondaryText,
                                       unselectedLabelColor:
                                           FlutterFlowTheme.of(context)
-                                              .secondaryText,
+                                              .primaryText,
                                       labelPadding:
                                           EdgeInsetsDirectional.fromSTEB(
                                               32.0, 0.0, 32.0, 0.0),
