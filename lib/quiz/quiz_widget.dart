@@ -54,7 +54,8 @@ class _QuizWidgetState extends State<QuizWidget> {
               size: 30.0,
             ),
             onPressed: () async {
-              context.pop();
+              context.pushNamed('HomePage');
+              
             },
           ),
           title: Text(
