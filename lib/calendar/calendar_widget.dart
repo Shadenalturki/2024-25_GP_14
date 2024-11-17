@@ -84,7 +84,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ),
               TextField(
                 controller: eventDescriptionController,
-                decoration: InputDecoration(labelText: 'Event Description (optional)'),
+                decoration:
+                    InputDecoration(labelText: 'Event Description (optional)'),
               ),
             ],
           ),
@@ -141,6 +142,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final veryLightGrey = Color(0xFFF5F5F5); // Very light grey color
+    final mediumGreen = Color(0xFF7B9076); // Medium green color
+
     return ChangeNotifierProvider.value(
       value: _model,
       child: GestureDetector(
@@ -187,73 +191,122 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             centerTitle: false,
             elevation: 2,
           ),
-          body: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 3,
-                        color: Color(0x33000000),
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: FlutterFlowCalendar(
-                    color: FlutterFlowTheme.of(context).primary,
-                    weekFormat: false,
-                    weekStartsMonday: true,
-                    onChange: (DateTimeRange? newSelectedDate) {
-                      if (newSelectedDate != null &&
-                          hasManuallySelectedDate) {
-                        _addEvent(newSelectedDate.start);
-                      }
-                      hasManuallySelectedDate = true;
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(16, 12, 0, 0),
-                  child: Text(
-                    'Coming Up',
-                    style: FlutterFlowTheme.of(context)
-                        .labelMedium
-                        .override(
-                          fontFamily: 'Inter',
-                          letterSpacing: 0.0,
+          body: Consumer<CalendarModel>(
+            builder: (context, model, child) {
+              return Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Calendar view
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 3,
+                          color: Color(0x33000000),
+                          offset: Offset(0, 1),
                         ),
+                      ],
+                    ),
+                    child: FlutterFlowCalendar(
+                      color: FlutterFlowTheme.of(context).primary,
+                      weekFormat: false,
+                      weekStartsMonday: true,
+                      onChange: (DateTimeRange? newSelectedDate) {
+                        if (newSelectedDate != null &&
+                            hasManuallySelectedDate) {
+                          _addEvent(newSelectedDate.start);
+                        }
+                        hasManuallySelectedDate = true;
+                      },
+                    ),
                   ),
-                ),
-                ListView.builder(
-                  padding: EdgeInsets.zero,
-                  primary: false,
-                  shrinkWrap: true,
-                  itemCount: _model.upcomingEvents.length,
-                  itemBuilder: (context, index) {
-                    final event = _model.upcomingEvents[index];
-                    return Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
-                      child: ListTile(
-                        title: Text(event['eventName']),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(event['eventDetails']),
-                            Text(DateFormat('EEE, MMM d, yyyy')
-                                .format(event['eventDate'])),
-                          ],
-                        ),
+                  // "Coming Up" Section with unified background
+                  Expanded(
+                    child: Container(
+                      color: veryLightGrey, // Unified background for the section
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // "Coming Up" Header
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12.0, horizontal: 16.0),
+                            child: Text(
+                              'Coming Up',
+                              style: FlutterFlowTheme.of(context)
+                                  .titleLarge
+                                  .override(
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.bold,
+                                    color: mediumGreen,
+                                  ),
+                            ),
+                          ),
+                          // Event List
+                          Expanded(
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: model.upcomingEvents.length,
+                              itemBuilder: (context, index) {
+                                final event = model.upcomingEvents[index];
+                                return Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      16, 8, 16, 8),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white, // Card background
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: mediumGreen, // Medium green border
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16, horizontal: 12),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            event['eventName'],
+                                            style: FlutterFlowTheme.of(context)
+                                                .titleMedium
+                                                .override(
+                                                  fontFamily: 'Inter Tight',
+                                                  fontWeight: FontWeight.bold,
+                                                  color: mediumGreen,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            DateFormat('EEE, MMM d, yyyy')
+                                                .format(event['eventDate']),
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodySmall
+                                                .override(
+                                                  fontFamily: 'Inter',
+                                                  color: mediumGreen,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
-              ],
-            ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
