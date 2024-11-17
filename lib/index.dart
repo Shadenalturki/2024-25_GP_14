@@ -7,3 +7,4 @@ export '/forgotpassword/forgotpassword_widget.dart' show ForgotpasswordWidget;
 export '/profile/profile_widget.dart' show ProfileWidget;
 export '/quiz/quiz_widget.dart' show QuizWidget;
 export '/calendar/calendar_widget.dart' show CalendarWidget;
+export '/history/history_widget.dart' show HistoryWidget;

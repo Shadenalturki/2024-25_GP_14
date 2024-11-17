@@ -42,20 +42,47 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         key: scaffoldKey,
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF104036),
+          backgroundColor: Color(0xFF104036),
           automaticallyImplyLeading: false,
-          title: Center(
-            child: Text(
-              'Profile',
-              style: FlutterFlowTheme.of(context).headlineMedium.override(
-                    fontFamily: 'Inknut Antiqua',
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+          title: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                    ),
+                    child: Image.asset(
+                      'assets/images/S_logoo.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
-              textAlign: TextAlign.center,
-            ),
+                ],
+              ),
+              Align(
+                alignment: AlignmentDirectional(0, 0),
+                child: Text(
+                  'SummAIze ',
+                  textAlign: TextAlign.center,
+                  style: FlutterFlowTheme.of(context).headlineMedium.override(
+                        fontFamily: 'Inknut Antiqua',
+                        color: Colors.white,
+                        fontSize: 22,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ],
           ),
+          actions: [],
+          centerTitle: false,
           elevation: 2,
         ),
         body: SafeArea(
@@ -109,9 +136,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   ),
                 ],
               ),
-              _buildUserInfoTile(currentUserDisplayName),
-              _buildUserInfoTile(currentUserEmail),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              _buildUserInfoTile("Name", currentUserDisplayName),
+              _buildUserInfoTile("Email", currentUserEmail),
+              const SizedBox(height: 16),
               FFButtonWidget(
                 onPressed: () async {
                   bool confirmDialogResponse = await showDialog<bool>(
@@ -165,24 +193,56 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     );
   }
 
-  Widget _buildUserInfoTile(String info) {
+  Widget _buildUserInfoTile(String label, String info) {
     return Container(
       width: 353,
       height: 66,
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F1F1),
         borderRadius: BorderRadius.circular(25),
-      ),
-      alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(
-        info,
-        style: const TextStyle(
-          fontFamily: 'DM Sans',
-          color: Color(0xFF202325),
-          fontSize: 20,
+        border: Border.all(
+          color: const Color(0xFF104036), // Orange border color
+          width: 2,
         ),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none, // Allow label to overflow the container
+        children: [
+          // Label inside the border
+          Positioned(
+            left: 16,
+            top: -14, // Adjusted to make the label fully visible
+            child: Container(
+              color: const Color(0xFFF1F1F1), // Background color to blend
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'DM Sans',
+                  fontSize: 16, // Increased font size for better visibility
+                  fontWeight: FontWeight.bold, // Bold font weight
+                  color: Colors.black, // More prominent text color
+                ),
+              ),
+            ),
+          ),
+          // User info text
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16),
+              child: Text(
+                info,
+                style: const TextStyle(
+                  fontFamily: 'DM Sans',
+                  fontSize: 18,
+                  color: Color(0xFF202325),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
