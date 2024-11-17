@@ -120,6 +120,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => const QuizWidget(),
         ),
         FFRoute(
+           name: 'history', // Ensure the name matches exactly
+           path: '/history',
+          builder: (context, params) => const HistoryWidget(),
+        ),
+        FFRoute(
           name: 'calendar',
           path: '/calendar',
           builder: (context, params) => params.isEmpty

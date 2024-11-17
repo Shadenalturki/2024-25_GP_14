@@ -419,9 +419,8 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                     ),
                                                   ),
                                                   FFButtonWidget(
-                                                    onPressed: () {
-                                                      print(
-                                                          'Button pressed ...');
+                                                    onPressed: () async {
+                                                    context.pushNamed('history');
                                                     },
                                                     text: 'History',
                                                     icon: const Icon(
@@ -589,10 +588,9 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                     ),
                                                   ),
                                                   FFButtonWidget(
-                                                    onPressed: () {
-                                                      print(
-                                                          'Button pressed ...');
-                                                    },
+                                                   onPressed: () async {
+                                                   context.pushNamed('history');
+                                                   },
                                                     text: 'History',
                                                     icon: const Icon(
                                                       Icons.history,
@@ -759,10 +757,9 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                     ),
                                                   ),
                                                   FFButtonWidget(
-                                                    onPressed: () {
-                                                      print(
-                                                          'Button pressed ...');
-                                                    },
+                                                    onPressed: () async {
+                                                    context.pushNamed('history');
+                                                   },
                                                     text: 'History',
                                                     icon: const Icon(
                                                       Icons.history,
@@ -929,9 +926,8 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                     ),
                                                   ),
                                                   FFButtonWidget(
-                                                    onPressed: () {
-                                                      print(
-                                                          'Button pressed ...');
+                                                    onPressed: () async {
+                                                    context.pushNamed('history');
                                                     },
                                                     text: 'History',
                                                     icon: const Icon(
