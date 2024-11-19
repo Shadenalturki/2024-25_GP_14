@@ -48,97 +48,100 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   }
 
   Future<void> _addEvent(DateTime selectedDate) async {
-    final user = FirebaseAuth.instance.currentUser; // Get current user
+  final user = FirebaseAuth.instance.currentUser; // Get current user
 
-    if (user == null) {
-      // Handle the case where the user is not logged in
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text('You must be logged in to add events.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
-
+  if (user == null) {
+    // Handle the case where the user is not logged in
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Add Event'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: eventTitleController,
-                decoration: InputDecoration(labelText: 'Event Title'),
-              ),
-              TextField(
-                controller: eventDescriptionController,
-                decoration:
-                    InputDecoration(labelText: 'Event Description (optional)'),
-              ),
-            ],
-          ),
+          title: Text('Error'),
+          content: Text('You must be logged in to add events.'),
           actions: [
             TextButton(
-              onPressed: () async {
-                if (eventTitleController.text.trim().isEmpty) {
-                  // Show a popup if the event title is empty
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Invalid Input'),
-                        content: Text('Event name cannot be empty.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                  return;
-                }
-
-                // Add event to Firestore
-                await _model.addEvent(
-                  user.uid, // Pass the actual userId from FirebaseAuth
-                  eventTitleController.text.trim(), // Trim the title
-                  eventDescriptionController.text.trim(), // Trim the description
-                  selectedDate,
-                );
-                eventTitleController.clear(); // Clear title input
-                eventDescriptionController.clear(); // Clear description input
-                Navigator.of(context).pop(); // Close the Add Event dialog
-
-                // Fetch updated events after adding a new one
-                await _model.fetchEvents();
-              },
-              child: Text('Add'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the Add Event dialog
-              },
-              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
             ),
           ],
         );
       },
     );
+    return;
   }
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Add Event'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: eventTitleController,
+              decoration: InputDecoration(labelText: 'Event Title'),
+            ),
+            TextField(
+              controller: eventDescriptionController,
+              decoration:
+                  InputDecoration(labelText: 'Event Description (optional)'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              if (eventTitleController.text.trim().isEmpty) {
+                // Show a popup if the event title is empty
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Invalid Input'),
+                      content: Text('Event name cannot be empty.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+                return;
+              }
+
+              // Debug: Print userId before adding event
+              print('Adding event with userId: ${user.uid}');
+
+              // Add event to Firestore
+              await _model.addEvent(
+                user.uid, // Pass the actual userId from FirebaseAuth
+                eventTitleController.text.trim(), // Trim the title
+                eventDescriptionController.text.trim(), // Trim the description
+                selectedDate,
+              );
+              eventTitleController.clear(); // Clear title input
+              eventDescriptionController.clear(); // Clear description input
+              Navigator.of(context).pop(); // Close the Add Event dialog
+
+              // Fetch updated events after adding a new one
+              await _model.fetchEvents();
+            },
+            child: Text('Add'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the Add Event dialog
+            },
+            child: Text('Cancel'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
