@@ -46,6 +46,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     super.dispose();
   }
 
+  /// Add a new event to the Firestore database
   Future<void> _addEvent(DateTime selectedDate) async {
     final user = FirebaseAuth.instance.currentUser; // Get current user
 
@@ -69,6 +70,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       return;
     }
 
+    // Clear the fields before showing the dialog
+    eventTitleController.clear();
+    eventDescriptionController.clear();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -91,7 +96,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           actions: [
             TextButton(
               onPressed: () async {
-                if (eventTitleController.text.trim().isEmpty) {
+                final title = eventTitleController.text.trim();
+                final description = eventDescriptionController.text.trim();
+
+                if (title.isEmpty) {
                   // Show a popup if the event title is empty
                   showDialog(
                     context: context,
@@ -114,13 +122,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 // Add event to Firestore
                 await _model.addEvent(
                   user.uid, // Pass the actual userId from FirebaseAuth
-                  eventTitleController.text.trim(), // Trim the title
-                  eventDescriptionController.text
-                      .trim(), // Trim the description
+                  title, // Use trimmed title
+                  description, // Use trimmed description
                   selectedDate,
                 );
-                eventTitleController.clear(); // Clear title input
-                eventDescriptionController.clear(); // Clear description input
+
+                // Clear the fields after adding the event
+                eventTitleController.clear();
+                eventDescriptionController.clear();
+
                 Navigator.of(context).pop(); // Close the Add Event dialog
 
                 // Fetch updated events after adding a new one
@@ -140,10 +150,84 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     );
   }
 
+  /// Show dialog for editing an existing event
+  void _showEditEventDialog(Map<String, dynamic> event) {
+    eventTitleController.text = event['eventName'];
+    eventDescriptionController.text = event['eventDetails'] ?? '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit Event'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: eventTitleController,
+                decoration: const InputDecoration(labelText: 'Event Title'),
+              ),
+              TextField(
+                controller: eventDescriptionController,
+                decoration: const InputDecoration(
+                    labelText: 'Event Description (optional)'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final newTitle = eventTitleController.text.trim();
+                final newDescription = eventDescriptionController.text.trim();
+
+                if (newTitle.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Event title cannot be empty.')),
+                  );
+                  return;
+                }
+
+                // Update event in Firestore
+                await FirebaseFirestore.instance
+                    .collection('events')
+                    .doc(event['id'])
+                    .update({
+                  'eventName': newTitle,
+                  'eventDetails': newDescription,
+                });
+
+                // Update local list of events
+                setState(() {
+                  final index = _model.upcomingEvents
+                      .indexWhere((e) => e['id'] == event['id']);
+                  if (index != -1) {
+                    _model.upcomingEvents[index]['eventName'] = newTitle;
+                    _model.upcomingEvents[index]['eventDetails'] =
+                        newDescription;
+                  }
+                });
+
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final veryLightGrey = Color(0xFFF5F5F5); // Very light grey color
-    final mediumGreen = Color(0xFF7B9076); // Medium green color
+    final veryLightGrey = const Color(0xFFF5F5F5); // Very light grey color
+    final mediumGreen = const Color(0xFF7B9076); // Medium green color
 
     return ChangeNotifierProvider.value(
       value: _model,
@@ -153,7 +237,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           appBar: AppBar(
-            backgroundColor: Color(0xFF104036),
+            backgroundColor: const Color(0xFF104036),
             automaticallyImplyLeading: false,
             title: Row(
               mainAxisSize: MainAxisSize.max,
@@ -163,7 +247,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   width: 60,
                   height: 60,
                   clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                   ),
                   child: Image.asset(
@@ -172,7 +256,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   ),
                 ),
                 Align(
-                  alignment: AlignmentDirectional(0, 0),
+                  alignment: const AlignmentDirectional(0, 0),
                   child: Text(
                     'SummAIze ',
                     textAlign: TextAlign.center,
@@ -203,7 +287,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondaryBackground,
                       boxShadow: [
-                        BoxShadow(
+                        const BoxShadow(
                           blurRadius: 3,
                           color: Color(0x33000000),
                           offset: Offset(0, 1),
@@ -226,8 +310,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   // "Coming Up" Section with unified background
                   Expanded(
                     child: Container(
-                      color:
-                          veryLightGrey, // Unified background for the section
+                      color: veryLightGrey, // Unified background for the section
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -253,76 +336,99 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               itemCount: model.upcomingEvents.length,
                               itemBuilder: (context, index) {
                                 final event = model.upcomingEvents[index];
-                                final eventDetails = event[
-                                    'eventDetails']; // Retrieve event details
+                                final eventDetails = event['eventDetails'];
                                 return Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       16, 8, 16, 8),
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white, // Card background
                                       borderRadius: BorderRadius.circular(24),
                                       border: Border.all(
-                                        color:
-                                            mediumGreen, // Medium green border
+                                        color: mediumGreen, // Medium green border
                                         width: 1,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black
-                                              .withOpacity(0.2), // Shadow color
-                                          blurRadius: 8, // Blur radius
-                                          offset: Offset(
-                                              2, 2), // Offset of the shadow
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 8,
+                                          offset: const Offset(2, 2),
                                         ),
                                       ],
                                     ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 16, horizontal: 12),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            event['eventName'],
-                                            style: FlutterFlowTheme.of(context)
-                                                .titleMedium
-                                                .override(
-                                                  fontFamily: 'Inter Tight',
-                                                  fontWeight: FontWeight.bold,
-                                                  color:
-                                                      const Color(0xFF14181B),
-                                                ),
-                                          ),
-                                          if (eventDetails != null &&
-                                              eventDetails.isNotEmpty)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0, bottom: 8.0),
-                                              child: Text(
-                                                eventDetails,
-                                                style:
-                                                    FlutterFlowTheme.of(context)
+                                    child: Stack(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 16, horizontal: 12),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                event['eventName'],
+                                                style: FlutterFlowTheme.of(
+                                                        context)
+                                                    .titleMedium
+                                                    .override(
+                                                      fontFamily:
+                                                          'Inter Tight',
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: const Color(
+                                                          0xFF14181B),
+                                                    ),
+                                              ),
+                                              if (eventDetails != null &&
+                                                  eventDetails.isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8.0,
+                                                          bottom: 8.0),
+                                                  child: Text(
+                                                    eventDetails,
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
                                                         .bodySmall
                                                         .override(
                                                           fontFamily: 'Inter',
                                                           color: mediumGreen,
                                                         ),
-                                              ),
-                                            ),
-                                          Text(
-                                            DateFormat('EEE, MMM d, yyyy')
-                                                .format(event['eventDate']),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodySmall
-                                                .override(
-                                                  fontFamily: 'Inter',
-                                                  color: mediumGreen,
+                                                  ),
                                                 ),
+                                              Text(
+                                                DateFormat(
+                                                        'EEE, MMM d, yyyy')
+                                                    .format(
+                                                        event['eventDate']),
+                                                style: FlutterFlowTheme.of(
+                                                        context)
+                                                    .bodySmall
+                                                    .override(
+                                                      fontFamily: 'Inter',
+                                                      color: mediumGreen,
+                                                    ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                        // Positioned edit icon
+                                        Positioned(
+                                          right: 16,
+                                          top: 0,
+                                          bottom: 0,
+                                          child: Center(
+                                            child: IconButton(
+                                              icon: const Icon(Icons.edit,
+                                                  color: Color(0xFF104036)),
+                                              onPressed: () {
+                                                _showEditEventDialog(event);
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
