@@ -21,7 +21,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Controllers for event inputs
+  // Calendar
+  // cc
   final TextEditingController eventTitleController = TextEditingController();
   final TextEditingController eventDescriptionController =
       TextEditingController();
