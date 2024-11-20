@@ -6,7 +6,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import 'calendar_model.dart';
 export 'calendar_model.dart';
 
@@ -111,9 +110,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   );
                   return;
                 }
-
-                // Debug: Print userId before adding event
-                print('Adding event with userId: ${user.uid}');
 
                 // Add event to Firestore
                 await _model.addEvent(
@@ -271,6 +267,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                             mediumGreen, // Medium green border
                                         width: 1,
                                       ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withOpacity(0.2), // Shadow color
+                                          blurRadius: 8, // Blur radius
+                                          offset: Offset(
+                                              2, 2), // Offset of the shadow
+                                        ),
+                                      ],
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
