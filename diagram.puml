@@ -1,0 +1,184 @@
+
+@startuml
+skinparam classAttributeIconSize 0
+
+class CalendarWidget {
+  CalendarWidget()
+}
+class _CalendarWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  TextEditingController()
+  
+  false
+  user
+  color
+  color
+  model.upcomingEvents[index]
+  event[
+  initState()
+  dispose()
+  AlertDialog()
+  AlertDialog()
+  AlertDialog()
+  build()
+  Column()
+  Padding()
+  Color()
+}
+class ChatbotWidget {
+  ChatbotWidget()
+}
+class _ChatbotWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  initState()
+  dispose()
+  build()
+  GestureDetector()
+  AlignmentDirectional()
+}
+class ForgotpasswordWidget {
+  ForgotpasswordWidget()
+}
+class _ForgotpasswordWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  initState()
+  dispose()
+  build()
+  Scaffold()
+  SnackBar()
+}
+class HistoryWidget {
+  HistoryWidget()
+}
+class _HistoryWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  initState()
+  dispose()
+  build()
+  GestureDetector()
+}
+class HomePageWidget {
+  HomePageWidget()
+}
+class _HomePageWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  currentUser?.uid
+  FirebaseFirestore.instance
+  
+  currentUser?.uid
+  courseNameController.text.trim()
+  initState()
+  SnackBar()
+  SnackBar()
+  _showAddCourseDialog()
+  AlertDialog()
+  AlertDialog()
+  dispose()
+  build()
+  Scaffold()
+  Padding()
+}
+class ProfileWidget {
+  ProfileWidget()
+}
+class _ProfileWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  showDialog<bool>(
+  initState()
+  dispose()
+  build()
+  GestureDetector()
+  Align()
+  SizedBox()
+  SizedBox()
+  AlertDialog()
+  Text()
+  _buildUserInfoTile()
+  Container()
+}
+class QuizWidget {
+  QuizWidget()
+}
+class _QuizWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  initState()
+  dispose()
+  build()
+  GestureDetector()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+  AlignmentDirectional()
+}
+class SignUpWidget {
+  SignUpWidget()
+}
+class _SignUpWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  AnimationInfo>{}
+  {
+  _model.userNameTextController.text.trim()
+  _model.emailTextController.text.trim()
+  _model.passwordSignUpTextController.text
+  _model.confirmPasswordTextController.text
+  String?
+  _model
+  _model
+  _model
+  String
+  
+  _model
+  
+  FirebaseFirestore
+  authManager
+  initState()
+  dispose()
+  build()
+  GestureDetector()
+  AlertDialog()
+  AlertDialog()
+  AlertDialog()
+  AlertDialog()
+  AlertDialog()
+  AlertDialog()
+  AlertDialog()
+  AlertDialog()
+}
+class SummaryQuizWidget {
+  SummaryQuizWidget()
+}
+class _SummaryQuizWidgetState {
+  _model
+  GlobalKey<ScaffoldState>()
+  initState()
+  dispose()
+  build()
+  GestureDetector()
+  TransitionInfo()
+}
+
+@enduml
