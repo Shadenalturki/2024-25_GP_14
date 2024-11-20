@@ -112,11 +112,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   return;
                 }
 
+                // Debug: Print userId before adding event
+                print('Adding event with userId: ${user.uid}');
+
                 // Add event to Firestore
                 await _model.addEvent(
                   user.uid, // Pass the actual userId from FirebaseAuth
                   eventTitleController.text.trim(), // Trim the title
-                  eventDescriptionController.text.trim(), // Trim the description
+                  eventDescriptionController.text
+                      .trim(), // Trim the description
                   selectedDate,
                 );
                 eventTitleController.clear(); // Clear title input
@@ -226,7 +230,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   // "Coming Up" Section with unified background
                   Expanded(
                     child: Container(
-                      color: veryLightGrey, // Unified background for the section
+                      color:
+                          veryLightGrey, // Unified background for the section
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -252,6 +257,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               itemCount: model.upcomingEvents.length,
                               itemBuilder: (context, index) {
                                 final event = model.upcomingEvents[index];
+                                final eventDetails = event[
+                                    'eventDetails']; // Retrieve event details
                                 return Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       16, 8, 16, 8),
@@ -260,7 +267,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                       color: Colors.white, // Card background
                                       borderRadius: BorderRadius.circular(24),
                                       border: Border.all(
-                                        color: mediumGreen, // Medium green border
+                                        color:
+                                            mediumGreen, // Medium green border
                                         width: 1,
                                       ),
                                     ),
@@ -278,10 +286,26 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                                 .override(
                                                   fontFamily: 'Inter Tight',
                                                   fontWeight: FontWeight.bold,
-                                                  color: mediumGreen,
+                                                  color:
+                                                      const Color(0xFF14181B),
                                                 ),
                                           ),
-                                          const SizedBox(height: 8),
+                                          if (eventDetails != null &&
+                                              eventDetails.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 8.0, bottom: 8.0),
+                                              child: Text(
+                                                eventDetails,
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodySmall
+                                                        .override(
+                                                          fontFamily: 'Inter',
+                                                          color: mediumGreen,
+                                                        ),
+                                              ),
+                                            ),
                                           Text(
                                             DateFormat('EEE, MMM d, yyyy')
                                                 .format(event['eventDate']),
