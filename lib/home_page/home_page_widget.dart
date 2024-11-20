@@ -160,6 +160,99 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     );
   }
 
+  void _showEditCourseDialog(int index) {
+    TextEditingController courseNameController = TextEditingController(
+      text: courses[index]['courseName'],
+    );
+    TextEditingController courseDescriptionController = TextEditingController(
+      text: courses[index]['courseDescription'],
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Course'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: courseNameController,
+                decoration: const InputDecoration(
+                  hintText: 'Edit course name',
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: courseDescriptionController,
+                decoration: const InputDecoration(
+                  hintText: 'Edit course description (optional)',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                String updatedCourseName = courseNameController.text.trim();
+                String updatedCourseDescription =
+                    courseDescriptionController.text.trim();
+
+                if (updatedCourseName.isNotEmpty) {
+                  final userId = currentUser?.uid;
+                  if (userId != null) {
+                    try {
+                      final querySnapshot = await FirebaseFirestore.instance
+                          .collection('courses')
+                          .where('userId', isEqualTo: userId)
+                          .get();
+
+                      final docId = querySnapshot.docs[index].id;
+
+                      await FirebaseFirestore.instance
+                          .collection('courses')
+                          .doc(docId)
+                          .update({
+                        'courseName': updatedCourseName,
+                        'courseDescription': updatedCourseDescription,
+                      });
+
+                      setState(() {
+                        courses[index]['courseName'] = updatedCourseName;
+                        courses[index]['courseDescription'] =
+                            updatedCourseDescription;
+                      });
+
+                      Navigator.of(context).pop();
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error updating course: $e'),
+                        ),
+                      );
+                    }
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Course name cannot be empty.')),
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -340,24 +433,40 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(13.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                course['courseName']!,
-                                style: FlutterFlowTheme.of(context)
-                                    .headlineSmall
-                                    .override(
-                                      fontFamily: 'Outfit',
-                                      color: const Color(0xFF14181B),
-                                      fontSize: 24.0,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      course['courseName']!,
+                                      style: FlutterFlowTheme.of(context)
+                                          .headlineSmall
+                                          .override(
+                                            fontFamily: 'Outfit',
+                                            color: const Color(0xFF14181B),
+                                            fontSize: 24.0,
+                                          ),
                                     ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Color(0xFF104036)),
+                                    onPressed: () {
+                                      _showEditCourseDialog(index);
+                                    },
+                                  ),
+                                ],
                               ),
                               if (course['courseDescription']!.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(
-                                      top: 8.0, bottom: 8.0),
+                                      top: 0.0,
+                                      bottom: 10.0), // Reduced top padding
                                   child: Text(
                                     course['courseDescription']!,
                                     style: FlutterFlowTheme.of(context)
