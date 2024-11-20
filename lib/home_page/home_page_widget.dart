@@ -87,11 +87,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       setState(() {
         courseNames.insert(0, courseName); // Add to the top of the list
       });
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Course "$courseName" added successfully')),
-      );
     } catch (e) {
       // Handle Firestore errors
       ScaffoldMessenger.of(context).showSnackBar(
@@ -128,9 +123,20 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   _saveCourseToDatabase(courseName);
                   Navigator.of(context).pop();
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Course name cannot be empty')),
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Invalid Input'),
+                        content: Text('Course name cannot be empty.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 }
               },
