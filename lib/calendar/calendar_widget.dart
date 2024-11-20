@@ -112,9 +112,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   return;
                 }
 
-                // Debug: Print userId before adding event
-                print('Adding event with userId: ${user.uid}');
-
                 // Add event to Firestore
                 await _model.addEvent(
                   user.uid, // Pass the actual userId from FirebaseAuth
