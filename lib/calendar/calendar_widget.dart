@@ -49,181 +49,257 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   /// Add a new event to the Firestore database
   Future<void> _addEvent(DateTime selectedDate) async {
-    final user = FirebaseAuth.instance.currentUser; // Get current user
+  final user = FirebaseAuth.instance.currentUser; // Get current user
 
-    if (user == null) {
-      // Handle the case where the user is not logged in
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text('You must be logged in to add events.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
-
-    // Clear the fields before showing the dialog
-    eventTitleController.clear();
-    eventDescriptionController.clear();
-
+  if (user == null) {
+    // Handle the case where the user is not logged in
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Add Event'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: eventTitleController,
-                decoration: InputDecoration(labelText: 'Event Title'),
-              ),
-              TextField(
-                controller: eventDescriptionController,
-                decoration:
-                    InputDecoration(labelText: 'Event Description (optional)'),
-              ),
-            ],
-          ),
+          title: Text('Error'),
+          content: Text('You must be logged in to add events.'),
           actions: [
             TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+    return;
+  }
+
+  // Clear the fields before showing the dialog
+  eventTitleController.clear();
+  eventDescriptionController.clear();
+
+  TimeOfDay? selectedTime;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Add Event'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: eventTitleController,
+              decoration: InputDecoration(labelText: 'Event Title'),
+            ),
+            TextField(
+              controller: eventDescriptionController,
+              decoration:
+                  InputDecoration(labelText: 'Event Description (optional)'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
               onPressed: () async {
-                final title = eventTitleController.text.trim();
-                final description = eventDescriptionController.text.trim();
-
-                if (title.isEmpty) {
-                  // Show a popup if the event title is empty
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Invalid Input'),
-                        content: Text('Event name cannot be empty.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                  return;
-                }
-
-                // Add event to Firestore
-                await _model.addEvent(
-                  user.uid, // Pass the actual userId from FirebaseAuth
-                  title, // Use trimmed title
-                  description, // Use trimmed description
-                  selectedDate,
+                // Show the Time Picker
+                selectedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
                 );
 
-                // Clear the fields after adding the event
-                eventTitleController.clear();
-                eventDescriptionController.clear();
-
-                Navigator.of(context).pop(); // Close the Add Event dialog
-
-                // Fetch updated events after adding a new one
-                await _model.fetchEvents();
+                if (selectedTime != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Time Selected: ${selectedTime!.format(context)}')),
+                  );
+                }
               },
-              child: Text('Add'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the Add Event dialog
-              },
-              child: Text('Cancel'),
+              child: Text('Select Time'),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final title = eventTitleController.text.trim();
+              final description = eventDescriptionController.text.trim();
+
+              if (title.isEmpty || selectedTime == null) {
+                // Show a popup if the event title or time is empty
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Invalid Input'),
+                      content: Text(
+                          'Event name and time cannot be empty. Please provide valid inputs.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+                return;
+              }
+
+              // Combine selectedDate and selectedTime into a full DateTime object
+              final eventDateTime = DateTime(
+                selectedDate.year,
+                selectedDate.month,
+                selectedDate.day,
+                selectedTime!.hour,
+                selectedTime!.minute,
+              );
+
+              // Add event to Firestore
+              await _model.addEvent(
+                user.uid, // Pass the actual userId from FirebaseAuth
+                title, // Use trimmed title
+                description, // Use trimmed description
+                eventDateTime, // Use the combined date and time
+              );
+
+              // Clear the fields after adding the event
+              eventTitleController.clear();
+              eventDescriptionController.clear();
+
+              Navigator.of(context).pop(); // Close the Add Event dialog
+
+              // Fetch updated events after adding a new one
+              await _model.fetchEvents();
+            },
+            child: Text('Add'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the Add Event dialog
+            },
+            child: Text('Cancel'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   /// Show dialog for editing an existing event
-  void _showEditEventDialog(Map<String, dynamic> event) {
-    eventTitleController.text = event['eventName'];
-    eventDescriptionController.text = event['eventDetails'] ?? '';
+void _showEditEventDialog(Map<String, dynamic> event) {
+  eventTitleController.text = event['eventName'];
+  eventDescriptionController.text = event['eventDetails'] ?? '';
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit Event'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: eventTitleController,
-                decoration: const InputDecoration(labelText: 'Event Title'),
-              ),
-              TextField(
-                controller: eventDescriptionController,
-                decoration: const InputDecoration(
-                    labelText: 'Event Description (optional)'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
+  // Ensure eventDate is treated as DateTime
+  final eventDateTime = event['eventDate'] is Timestamp
+      ? event['eventDate'].toDate()
+      : event['eventDate'] as DateTime;
+
+  TimeOfDay? selectedTime = TimeOfDay(
+    hour: eventDateTime.hour,
+    minute: eventDateTime.minute,
+  );
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Edit Event'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: eventTitleController,
+              decoration: const InputDecoration(labelText: 'Event Title'),
             ),
-            TextButton(
+            TextField(
+              controller: eventDescriptionController,
+              decoration: const InputDecoration(
+                  labelText: 'Event Description (optional)'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
               onPressed: () async {
-                final newTitle = eventTitleController.text.trim();
-                final newDescription = eventDescriptionController.text.trim();
+                // Show the Time Picker
+                TimeOfDay? pickedTime = await showTimePicker(
+                  context: context,
+                  initialTime: selectedTime ?? TimeOfDay.now(),
+                );
 
-                if (newTitle.isEmpty) {
+                if (pickedTime != null) {
+                  selectedTime = pickedTime;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Event title cannot be empty.')),
+                    SnackBar(
+                      content: Text('Time Selected: ${selectedTime!.format(context)}'),
+                    ),
                   );
-                  return;
                 }
-
-                // Update event in Firestore
-                await FirebaseFirestore.instance
-                    .collection('events')
-                    .doc(event['id'])
-                    .update({
-                  'eventName': newTitle,
-                  'eventDetails': newDescription,
-                });
-
-                // Update local list of events
-                setState(() {
-                  final index = _model.upcomingEvents
-                      .indexWhere((e) => e['id'] == event['id']);
-                  if (index != -1) {
-                    _model.upcomingEvents[index]['eventName'] = newTitle;
-                    _model.upcomingEvents[index]['eventDetails'] =
-                        newDescription;
-                  }
-                });
-
-                Navigator.of(context).pop();
               },
-              child: const Text('Save'),
+              child: Text(
+                selectedTime != null
+                    ? 'Time: ${selectedTime!.format(context)}'
+                    : 'Select Time',
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newTitle = eventTitleController.text.trim();
+              final newDescription = eventDescriptionController.text.trim();
+
+              if (newTitle.isEmpty || selectedTime == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text(
+                          'Event title and time cannot be empty.')),
+                );
+                return;
+              }
+
+              // Combine date and time for the updated event date
+              final updatedDateTime = DateTime(
+                eventDateTime.year,
+                eventDateTime.month,
+                eventDateTime.day,
+                selectedTime!.hour,
+                selectedTime!.minute,
+              );
+
+              // Update event in Firestore
+              await FirebaseFirestore.instance
+                  .collection('events')
+                  .doc(event['id'])
+                  .update({
+                'eventName': newTitle,
+                'eventDetails': newDescription,
+                'eventDate': Timestamp.fromDate(updatedDateTime),
+              });
+
+              // Update local list of events
+              setState(() {
+                final index = _model.upcomingEvents
+                    .indexWhere((e) => e['id'] == event['id']);
+                if (index != -1) {
+                  _model.upcomingEvents[index]['eventName'] = newTitle;
+                  _model.upcomingEvents[index]['eventDetails'] = newDescription;
+                  _model.upcomingEvents[index]['eventDate'] =
+                      Timestamp.fromDate(updatedDateTime);
+                }
+              });
+
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -398,19 +474,34 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                                         ),
                                                   ),
                                                 ),
-                                              Text(
-                                                DateFormat(
-                                                        'EEE, MMM d, yyyy')
-                                                    .format(
-                                                        event['eventDate']),
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodySmall
-                                                    .override(
-                                                      fontFamily: 'Inter',
-                                                      color: mediumGreen,
-                                                    ),
-                                              ),
+                                             Row(
+  children: [
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(77, 238, 202, 96), // Light red background for the time
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Text(
+        DateFormat('h:mm a').format(CalendarModel.convertToDateTime(event['eventDate'])),
+        style: FlutterFlowTheme.of(context).bodyMedium.override(
+          fontFamily: 'Inter',
+          color: const Color(0xFFC62828), // Red text for time
+        ),
+      ),
+    ),
+    const SizedBox(width: 8.0),
+    Text(
+      DateFormat('EEE, MMM d, yyyy').format(CalendarModel.convertToDateTime(event['eventDate'])),
+      style: FlutterFlowTheme.of(context).bodySmall.override(
+        fontFamily: 'Inter',
+        color: mediumGreen,
+      ),
+    ),
+  ],
+),
+
+
                                             ],
                                           ),
                                         ),

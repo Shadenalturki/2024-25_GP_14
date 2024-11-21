@@ -100,7 +100,16 @@ class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier
       print('Error fetching events from Firestore: $e');
     }
   }
-
+  /// Static utility function to handle Timestamp or DateTime conversion.
+  static DateTime convertToDateTime(dynamic value) {
+    if (value is Timestamp) {
+      return value.toDate();
+    } else if (value is DateTime) {
+      return value;
+    } else {
+      throw ArgumentError('Invalid type for date conversion: ${value.runtimeType}');
+    }
+  }
   // Getter to retrieve events for display
   List<Map<String, dynamic>> get upcomingEvents => events;
 }
