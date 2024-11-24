@@ -3,9 +3,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore package
-import 'home_page_model.dart';
-export 'home_page_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
@@ -15,16 +13,13 @@ class HomePageWidget extends StatefulWidget {
 }
 
 class _HomePageWidgetState extends State<HomePageWidget> {
-  late HomePageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  List<String> courseNames = []; // List to dynamically store course names
+  List<Map<String, String>> courses =
+      []; // List to store course name and description
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => HomePageModel());
-
-    // Fetch courses from Firestore
     _fetchCoursesFromDatabase();
   }
 
@@ -33,7 +28,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     final userId = currentUser?.uid;
 
     if (userId == null) {
-      // Show an error if the user is not logged in
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error: User not logged in')),
       );
@@ -41,34 +35,36 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     }
 
     try {
-      // Query Firestore to get all courses for the current user
       final querySnapshot = await FirebaseFirestore.instance
           .collection('courses')
           .where('userId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .get();
 
-      // Map the courses to the courseNames list
-      final courses =
-          querySnapshot.docs.map((doc) => doc['courseName'] as String).toList();
+      final fetchedCourses = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'courseName': data['courseName'] as String,
+          'courseDescription': data['courseDescription'] as String? ?? '',
+        };
+      }).toList();
 
       setState(() {
-        courseNames = courses;
+        courses = fetchedCourses;
       });
     } catch (e) {
-      // Handle Firestore errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching courses: $e')),
       );
     }
   }
 
-  /// Function to save a course to the Firestore database
-  Future<void> _saveCourseToDatabase(String courseName) async {
+  /// Save a course to the Firestore database
+  Future<void> _saveCourseToDatabase(
+      String courseName, String courseDescription) async {
     final userId = currentUser?.uid;
 
     if (userId == null) {
-      // Show an error if the user is not logged in
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error: User not logged in')),
       );
@@ -76,19 +72,20 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     }
 
     try {
-      // Save the course to the "courses" collection in Firestore
-      await FirebaseFirestore.instance.collection('courses').add({
+      final newCourse = {
         'courseName': courseName,
+        'courseDescription': courseDescription,
         'userId': userId,
-        'createdAt': FieldValue.serverTimestamp(), // Add a timestamp
-      });
+        'createdAt': FieldValue.serverTimestamp(),
+      };
 
-      // Update local state
+      await FirebaseFirestore.instance.collection('courses').add(newCourse);
+
       setState(() {
-        courseNames.insert(0, courseName); // Add to the top of the list
+        courses.insert(0,
+            {'courseName': courseName, 'courseDescription': courseDescription});
       });
     } catch (e) {
-      // Handle Firestore errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error saving course: $e')),
       );
@@ -97,17 +94,30 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
   void _showAddCourseDialog() {
     TextEditingController courseNameController = TextEditingController();
+    TextEditingController courseDescriptionController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Add Course'),
-          content: TextField(
-            controller: courseNameController,
-            decoration: const InputDecoration(
-              hintText: 'Enter course name',
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: courseNameController,
+                decoration: const InputDecoration(
+                  hintText: 'Enter course name',
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: courseDescriptionController,
+                decoration: const InputDecoration(
+                  hintText: 'Enter course description (optional)',
+                ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -119,20 +129,22 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             TextButton(
               onPressed: () {
                 String courseName = courseNameController.text.trim();
+                String courseDescription =
+                    courseDescriptionController.text.trim();
                 if (courseName.isNotEmpty) {
-                  _saveCourseToDatabase(courseName);
+                  _saveCourseToDatabase(courseName, courseDescription);
                   Navigator.of(context).pop();
                 } else {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Invalid Input'),
-                        content: Text('Course name cannot be empty.'),
+                        title: const Text('Invalid Input'),
+                        content: const Text('Course name cannot be empty.'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            child: Text('OK'),
+                            child: const Text('OK'),
                           ),
                         ],
                       );
@@ -148,10 +160,97 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     );
   }
 
-  @override
-  void dispose() {
-    _model.dispose();
-    super.dispose();
+  void _showEditCourseDialog(int index) {
+    TextEditingController courseNameController = TextEditingController(
+      text: courses[index]['courseName'],
+    );
+    TextEditingController courseDescriptionController = TextEditingController(
+      text: courses[index]['courseDescription'],
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Course'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: courseNameController,
+                decoration: const InputDecoration(
+                  hintText: 'Edit course name',
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: courseDescriptionController,
+                decoration: const InputDecoration(
+                  hintText: 'Edit course description (optional)',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                String updatedCourseName = courseNameController.text.trim();
+                String updatedCourseDescription =
+                    courseDescriptionController.text.trim();
+
+                if (updatedCourseName.isNotEmpty) {
+                  final userId = currentUser?.uid;
+                  if (userId != null) {
+                    try {
+                      final querySnapshot = await FirebaseFirestore.instance
+                          .collection('courses')
+                          .where('userId', isEqualTo: userId)
+                          .get();
+
+                      final docId = querySnapshot.docs[index].id;
+
+                      await FirebaseFirestore.instance
+                          .collection('courses')
+                          .doc(docId)
+                          .update({
+                        'courseName': updatedCourseName,
+                        'courseDescription': updatedCourseDescription,
+                      });
+
+                      setState(() {
+                        courses[index]['courseName'] = updatedCourseName;
+                        courses[index]['courseDescription'] =
+                            updatedCourseDescription;
+                      });
+
+                      Navigator.of(context).pop();
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error updating course: $e'),
+                        ),
+                      );
+                    }
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Course name cannot be empty.')),
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -163,14 +262,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         backgroundColor: const Color(0xFF104036),
         automaticallyImplyLeading: false,
         title: Align(
-          alignment: const AlignmentDirectional(0.0, 0.0),
+          alignment: const AlignmentDirectional(0, 0),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 60.0,
-                height: 60.0,
+                width: 60,
+                height: 60,
                 clipBehavior: Clip.antiAlias,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
@@ -178,16 +277,18 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 child: Image.asset(
                   'assets/images/S_logoo.png',
                   fit: BoxFit.fill,
+                  alignment: const Alignment(0, 0),
                 ),
               ),
               Align(
-                alignment: const AlignmentDirectional(0.0, 0.0),
+                alignment: const AlignmentDirectional(0, 0),
                 child: Text(
                   'SummAIze ',
                   style: FlutterFlowTheme.of(context).headlineMedium.override(
                         fontFamily: 'Inknut Antiqua',
                         color: Colors.white,
-                        fontSize: 22.0,
+                        fontSize: 22,
+                        letterSpacing: 0.0,
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -195,18 +296,20 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             ],
           ),
         ),
+        actions: const [],
+        centerTitle: false,
+        elevation: 0,
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Welcome container with Add Course button
             Container(
               height: 220,
               child: Stack(
-                alignment: AlignmentDirectional(1, -1),
+                alignment: const AlignmentDirectional(1, -1),
                 children: [
                   Align(
-                    alignment: AlignmentDirectional(-1.03, -0.82),
+                    alignment: const AlignmentDirectional(-1.03, -0.82),
                     child: Container(
                       width: 391,
                       height: 190,
@@ -216,7 +319,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     ),
                   ),
                   Align(
-                    alignment: AlignmentDirectional(0, -1.16),
+                    alignment: const AlignmentDirectional(0, -1.16),
                     child: Container(
                       width: 436,
                       height: 133,
@@ -234,7 +337,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     ),
                   ),
                   Align(
-                    alignment: AlignmentDirectional(-0.99, -1.01),
+                    alignment: const AlignmentDirectional(-0.99, -1.01),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(0),
                       child: Image.asset(
@@ -249,11 +352,12 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   Align(
                     alignment: const AlignmentDirectional(-0.83, 0.14),
                     child: Text(
-                      'Enjoy your\nlearning journey!',
+                      'Enjoy your\nlearning journey! ',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'DM Sans',
                             color: const Color(0xFF8F9291),
                             fontSize: 18,
+                            letterSpacing: 0.0,
                             fontWeight: FontWeight.bold,
                           ),
                     ),
@@ -268,6 +372,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                               fontFamily: 'Inter',
                               color: Colors.black,
                               fontSize: 30,
+                              letterSpacing: 0.0,
                               fontWeight: FontWeight.bold,
                             ),
                       ),
@@ -280,6 +385,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Inter',
                             color: const Color(0xFF8F9291),
+                            letterSpacing: 0.0,
                             fontWeight: FontWeight.bold,
                           ),
                     ),
@@ -295,8 +401,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                       ),
                       options: FFButtonOptions(
                         height: 40,
-                        padding:
-                            const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
                         color: const Color(0xFF104036),
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
@@ -310,11 +414,11 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 ],
               ),
             ),
-            // Dynamic course list
             Expanded(
               child: ListView.builder(
-                itemCount: courseNames.length,
+                itemCount: courses.length,
                 itemBuilder: (context, index) {
+                  final course = courses[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 8.0),
@@ -329,20 +433,51 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(13.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                courseNames[index],
-                                style: FlutterFlowTheme.of(context)
-                                    .headlineSmall
-                                    .override(
-                                      fontFamily: 'Outfit',
-                                      color: const Color(0xFF14181B),
-                                      fontSize: 24.0,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      course['courseName']!,
+                                      style: FlutterFlowTheme.of(context)
+                                          .headlineSmall
+                                          .override(
+                                            fontFamily: 'Outfit',
+                                            color: const Color(0xFF14181B),
+                                            fontSize: 24.0,
+                                          ),
                                     ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Color(0xFF104036)),
+                                    onPressed: () {
+                                      _showEditCourseDialog(index);
+                                    },
+                                  ),
+                                ],
                               ),
+                              if (course['courseDescription']!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 0.0,
+                                      bottom: 10.0), // Reduced top padding
+                                  child: Text(
+                                    course['courseDescription']!,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'Outfit',
+                                          color: const Color(0xFF8F9291),
+                                          fontSize: 16.0,
+                                        ),
+                                  ),
+                                ),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
