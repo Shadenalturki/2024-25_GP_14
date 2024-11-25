@@ -1,24 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_calendar.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'calendar_widget.dart' show CalendarWidget;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier {
-  /// State fields for stateful widgets in this page.
-
-  // State field(s) for TabBar widget.
+  // State fields for stateful widgets in this page.
   TabController? tabBarController;
-  int get tabBarCurrentIndex =>
-      tabBarController != null ? tabBarController!.index : 0;
-
-  // State field(s) for Calendar widget.
   DateTimeRange? calendarSelectedDay1;
   DateTimeRange? calendarSelectedDay2;
 
@@ -27,6 +17,7 @@ class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier
 
   // Local list to temporarily store events fetched from Firestore
   List<Map<String, dynamic>> events = [];
+  List<DateTime> markedDates = []; // Store dates with events
 
   @override
   void initState(BuildContext context) {
@@ -49,16 +40,18 @@ class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier
   }
 
   // Function to add an event to Firestore
-  Future<void> addEvent(
-      String userId, String title, String description, DateTime date) async {
+  Future<void> addEvent(String userId, String title, String description, DateTime eventDate) async {
     try {
-      await _firestore.collection('events').add({
-        'userId': userId, // Link event to the specific user
+      // Add the event to Firestore
+      await FirebaseFirestore.instance.collection('events').add({
+        'userId': userId,
         'eventName': title,
         'eventDetails': description,
-        'eventDate': date, // Store as DateTime
+        'eventDate': Timestamp.fromDate(eventDate), // Convert DateTime to Firestore Timestamp
       });
-      fetchEvents(); // Refresh local events after adding
+
+      // Refresh the list of events after adding the new event
+      await fetchEvents();
     } catch (e) {
       print('Error adding event to Firestore: $e');
     }
@@ -67,40 +60,53 @@ class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier
   // Function to fetch events from Firestore
   Future<void> fetchEvents() async {
     try {
-      final user = FirebaseAuth.instance.currentUser; // Get the current user
+      final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
         print('No user is logged in.');
-        return; // Stop execution if no user is logged in
+        return;
       }
 
-      final querySnapshot = await _firestore
+      final querySnapshot = await FirebaseFirestore.instance
           .collection('events')
-          .where('userId', isEqualTo: user.uid) // Filter by userId
+          .where('userId', isEqualTo: user.uid)
           .get();
 
       events = querySnapshot.docs.map((doc) {
         final data = doc.data();
         return {
           'id': doc.id,
-          'userId': data['userId'],
           'eventName': data['eventName'],
           'eventDetails': data['eventDetails'],
           'eventDate': data['eventDate'] is Timestamp
-              ? (data['eventDate'] as Timestamp).toDate() // Convert Timestamp to DateTime
-              : DateTime.parse(data['eventDate'] as String), // Parse String to DateTime
+              ? (data['eventDate'] as Timestamp).toDate()
+              : DateTime.parse(data['eventDate'] as String),
         };
       }).toList();
 
-      // Sort the events by date (soonest first)
-      events.sort((a, b) => a['eventDate'].compareTo(b['eventDate']));
+      // Sort events by eventDate in ascending order
+      events.sort((a, b) {
+        final dateA = a['eventDate'] as DateTime;
+        final dateB = b['eventDate'] as DateTime;
+        return dateA.compareTo(dateB);
+      });
 
-      notifyListeners(); // Notify listeners to update the UI
+      // Extract unique dates for highlighting
+      markedDates = events
+          .map((event) {
+            final eventDate = event['eventDate'] as DateTime;
+            return DateTime(eventDate.year, eventDate.month, eventDate.day); // Only the date
+          })
+          .toSet()
+          .toList();
+
+      notifyListeners();
     } catch (e) {
       print('Error fetching events from Firestore: $e');
     }
   }
-  /// Static utility function to handle Timestamp or DateTime conversion.
+
+  // Static utility function to handle Timestamp or DateTime conversion.
   static DateTime convertToDateTime(dynamic value) {
     if (value is Timestamp) {
       return value.toDate();
@@ -110,8 +116,7 @@ class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier
       throw ArgumentError('Invalid type for date conversion: ${value.runtimeType}');
     }
   }
+
   // Getter to retrieve events for display
   List<Map<String, dynamic>> get upcomingEvents => events;
 }
-
-

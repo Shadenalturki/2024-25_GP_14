@@ -250,9 +250,20 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     }
                   }
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Course name cannot be empty.')),
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Invalid Input'),
+                        content: const Text('Course name cannot be empty.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 }
               },
