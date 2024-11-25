@@ -76,158 +76,136 @@ Future<void> _addEvent(DateTime selectedDate) async {
 
   TimeOfDay? selectedTime;
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Add Event'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: eventTitleController,
-              decoration: InputDecoration(labelText: 'Event Title'),
-            ),
-            TextField(
-              controller: eventDescriptionController,
-              decoration: InputDecoration(labelText: 'Event Description (optional)'),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF008000), // Button background color (Green)
-                foregroundColor: Colors.white, // Button text color
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Rounded corners
+showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    TimeOfDay? selectedTime;
+
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setDialogState) {
+        return AlertDialog(
+          title: const Text('Add Event'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: eventTitleController,
+                decoration: const InputDecoration(labelText: 'Event Title'),
+              ),
+              TextField(
+                controller: eventDescriptionController,
+                decoration: const InputDecoration(labelText: 'Event Description (optional)'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF008000), // Button background color (Green)
+                  foregroundColor: Colors.white, // Button text color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), // Rounded corners
+                  ),
                 ),
-              ),
-              onPressed: () async {
-                // Show the Time Picker with the same styles as the edit dialog
-                TimeOfDay? pickedTime = await showTimePicker(
-                  context: context,
-                  initialTime: selectedTime ?? TimeOfDay.now(),
-                  builder: (BuildContext context, Widget? child) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.light(
-                          primary: const Color(0xFF008000), // Clock primary color (Green)
-                          onPrimary: Colors.white, // Clock text color
-                          onSurface: Colors.black, // Clock numbers color
-                        ),
-                      ),
-                      child: child!,
-                    );
-                  },
-                );
-
-                if (pickedTime != null) {
-                  selectedTime = pickedTime;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Time Selected: ${selectedTime!.format(context)}',
-                      ),
-                      backgroundColor: const Color.fromARGB(255, 2, 92, 2), // Match dot color for feedback
-                    ),
-                  );
-                }
-              },
-              child: Text(
-                selectedTime != null
-                    ? 'Time: ${selectedTime!.format(context)}'
-                    : 'Select Time (optional)',
-                style: const TextStyle(fontSize: 16), // Optional text styling
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              final title = eventTitleController.text.trim();
-              final description = eventDescriptionController.text.trim();
-
-              if (title.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text(
-                        'Invalid Input',
-                        style: TextStyle(color: Color(0xFF7B9076)), // Accent color for the title
-                      ),
-                      content: Text(
-                        'Event name cannot be empty.',
-                        style: TextStyle(color: Colors.black), // Standard black text
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(
-                            'OK',
-                            style: TextStyle(color: Color(0xFF7B9076)), // Accent color for "OK"
+                onPressed: () async {
+                  // Show the Time Picker
+                  TimeOfDay? pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: selectedTime ?? TimeOfDay.now(),
+                    builder: (BuildContext context, Widget? child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.light(
+                            primary: const Color(0xFF008000), // Clock primary color
+                            onPrimary: Colors.white, // Clock text color
+                            onSurface: Colors.black, // Clock numbers color
                           ),
                         ),
-                      ],
-                    );
-                  },
+                        child: child!,
+                      );
+                    },
+                  );
+
+                  // Immediately reflect the selected time when "OK" is clicked
+                  if (pickedTime != null) {
+                    setDialogState(() {
+                      selectedTime = pickedTime;
+                    });
+                  }
+                },
+                child: Text(
+                  selectedTime != null
+                      ? 'Time: ${selectedTime!.format(context)}' // Display selected time
+                      : 'Select Time (optional)', // Default text
+                  style: const TextStyle(fontSize: 16), // Optional text styling
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                // Handle adding the event logic
+                final title = eventTitleController.text.trim();
+                final description = eventDescriptionController.text.trim();
+
+                if (title.isEmpty) {
+                  // Show an error message if the title is empty
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Invalid Input'),
+                        content: const Text('Event title cannot be empty.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  return;
+                }
+
+                // Combine the date and time
+                final eventDateTime = DateTime(
+                  selectedDate.year,
+                  selectedDate.month,
+                  selectedDate.day,
+                  selectedTime?.hour ?? 0,
+                  selectedTime?.minute ?? 0,
                 );
-                return;
-              }
 
-              // Combine date and time, or use only date if no time is selected
-              final eventDateTime = selectedTime == null
-                  ? DateTime(selectedDate.year, selectedDate.month, selectedDate.day)
-                  : DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      selectedTime?.hour ?? 0, // Safely access hour
-                      selectedTime?.minute ?? 0, // Safely access minute
-                    );
+                // Add the event
+                await _model.addEvent(
+                  FirebaseAuth.instance.currentUser!.uid,
+                  title,
+                  description,
+                  eventDateTime,
+                );
 
-              // Add event to Firestore
-              await _model.addEvent(
-                user.uid, // Pass the userId
-                title, // Title
-                description, // Description
-                eventDateTime, // Always a valid DateTime
-              );
-
-              // Clear input fields
-              eventTitleController.clear();
-              eventDescriptionController.clear();
-
-              Navigator.of(context).pop(); // Close dialog
-
-              // Refresh events
-              await _model.fetchEvents();
-            },
-            child: Text(
-              'Add',
-              style: TextStyle(color: Color(0xFF7B9076)), // Accent color for "Add"
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Add'),
             ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
-            },
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF7B9076)), // Medium green for "Cancel"
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Close dialog
+              child: const Text('Cancel'),
             ),
-          ),
-        ],
-      );
-    },
-  );
+          ],
+        );
+      },
+    );
+  },
+);
+
 }
 
 
 
 
 
- void _showEditEventDialog(Map<String, dynamic> event) {
+void _showEditEventDialog(Map<String, dynamic> event) {
   eventTitleController.text = event['eventName'];
   eventDescriptionController.text = event['eventDetails'] ?? '';
 
@@ -244,144 +222,139 @@ Future<void> _addEvent(DateTime selectedDate) async {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Edit Event'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: eventTitleController,
-              decoration: const InputDecoration(labelText: 'Event Title'),
-            ),
-            TextField(
-              controller: eventDescriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Event Description (optional)',
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF008000), // Button background color (Green)
-                foregroundColor: Colors.white, // Button text color
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Rounded corners
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setDialogState) {
+          return AlertDialog(
+            title: const Text('Edit Event'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: eventTitleController,
+                  decoration: const InputDecoration(labelText: 'Event Title'),
                 ),
-              ),
-              onPressed: () async {
-                // Show the Time Picker
-                TimeOfDay? pickedTime = await showTimePicker(
-                  context: context,
-                  initialTime: selectedTime ?? TimeOfDay.now(),
-                  builder: (BuildContext context, Widget? child) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.light(
-                          primary: const Color(0xFF008000), // Clock primary color (Green)
-                          onPrimary: Colors.white, // Clock text color
-                          onSurface: Colors.black, // Clock numbers color
-                        ),
-                      ),
-                      child: child!,
-                    );
-                  },
-                );
-
-                if (pickedTime != null) {
-                  selectedTime = pickedTime;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Time Selected: ${selectedTime!.format(context)}',
-                      ),
-                      backgroundColor: const Color(0xFF008000), // Match dot color for feedback
-                    ),
-                  );
-                }
-              },
-              child: Text(
-                selectedTime != null
-                    ? 'Time: ${selectedTime!.format(context)}'
-                    : 'Select Time',
-                style: const TextStyle(fontSize: 16), // Optional text styling
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
-                color: Color(0xFF7B9076), // Medium green color for "Cancel"
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final newTitle = eventTitleController.text.trim();
-              final newDescription = eventDescriptionController.text.trim();
-
-              if (newTitle.isEmpty || selectedTime == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Event title and time cannot be empty.',
+                TextField(
+                  controller: eventDescriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Event Description (optional)',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF008000), // Button background color (Green)
+                    foregroundColor: Colors.white, // Button text color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
                     ),
                   ),
-                );
-                return;
-              }
+                  onPressed: () async {
+                    // Show the Time Picker
+                    TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: selectedTime ?? TimeOfDay.now(),
+                      builder: (BuildContext context, Widget? child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(
+                              primary: const Color(0xFF008000), // Clock primary color
+                              onPrimary: Colors.white, // Clock text color
+                              onSurface: Colors.black, // Clock numbers color
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
 
-              // Combine date and time for the updated event date
-              final updatedDateTime = DateTime(
-                eventDateTime.year,
-                eventDateTime.month,
-                eventDateTime.day,
-                selectedTime!.hour,
-                selectedTime!.minute,
-              );
-
-              // Update event in Firestore
-              await FirebaseFirestore.instance
-                  .collection('events')
-                  .doc(event['id'])
-                  .update({
-                'eventName': newTitle,
-                'eventDetails': newDescription,
-                'eventDate': Timestamp.fromDate(updatedDateTime),
-              });
-
-              // Update local list of events
-              setState(() {
-                final index = _model.upcomingEvents
-                    .indexWhere((e) => e['id'] == event['id']);
-                if (index != -1) {
-                  _model.upcomingEvents[index]['eventName'] = newTitle;
-                  _model.upcomingEvents[index]['eventDetails'] =
-                      newDescription;
-                  _model.upcomingEvents[index]['eventDate'] =
-                      Timestamp.fromDate(updatedDateTime);
-                }
-              });
-
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: const Text(
-              'Save',
-              style: TextStyle(
-                color: Color(0xFF7B9076), // Medium green color for "Save"
-              ),
+                    if (pickedTime != null) {
+                      setDialogState(() {
+                        selectedTime = pickedTime; // Update the selected time
+                      });
+                    }
+                  },
+                  child: Text(
+                    selectedTime != null
+                        ? 'Time: ${selectedTime!.format(context)}' // Display selected time
+                        : 'Select Time', // Default text
+                    style: const TextStyle(fontSize: 16), // Optional text styling
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(), // Close the dialog
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final newTitle = eventTitleController.text.trim();
+                  final newDescription = eventDescriptionController.text.trim();
+
+                  if (newTitle.isEmpty || selectedTime == null) {
+                    // Show an error if title or time is missing
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Invalid Input'),
+                          content: const Text('Event title and time cannot be empty.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    return;
+                  }
+
+                  // Combine date and time for the updated event
+                  final updatedDateTime = DateTime(
+                    eventDateTime.year,
+                    eventDateTime.month,
+                    eventDateTime.day,
+                    selectedTime!.hour,
+                    selectedTime!.minute,
+                  );
+
+                  // Update event in Firestore
+                  await FirebaseFirestore.instance
+                      .collection('events')
+                      .doc(event['id'])
+                      .update({
+                    'eventName': newTitle,
+                    'eventDetails': newDescription,
+                    'eventDate': Timestamp.fromDate(updatedDateTime),
+                  });
+
+                  // Update local list of events
+                  setState(() {
+                    final index = _model.upcomingEvents
+                        .indexWhere((e) => e['id'] == event['id']);
+                    if (index != -1) {
+                      _model.upcomingEvents[index]['eventName'] = newTitle;
+                      _model.upcomingEvents[index]['eventDetails'] = newDescription;
+                      _model.upcomingEvents[index]['eventDate'] =
+                          Timestamp.fromDate(updatedDateTime);
+                    }
+                  });
+
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
       );
     },
   );
 }
+
 
 
   @override
