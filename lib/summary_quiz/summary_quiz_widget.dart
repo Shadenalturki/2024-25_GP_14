@@ -6,7 +6,9 @@ import 'summary_quiz_model.dart';
 export 'summary_quiz_model.dart';
 
 class SummaryQuizWidget extends StatefulWidget {
-  const SummaryQuizWidget({super.key});
+  final String summary;
+
+  const SummaryQuizWidget({required this.summary, super.key});
 
   @override
   State<SummaryQuizWidget> createState() => _SummaryQuizWidgetState();
@@ -119,22 +121,35 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                             child: Stack(
                               children: [
                                 Align(
-                                  alignment: const AlignmentDirectional(-0.9, -0.85),
-                                  child: Text(
-                                    'Summary',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'DM Sans',
-                                          color: const Color(0xFF202325),
-                                          fontSize: 18.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                  alignment:
+                                      const AlignmentDirectional(-0.9, -0.85),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(
+                                        8.0), // Add padding around the text
+                                    child: Align(
+                                      alignment: Alignment
+                                          .centerLeft, // Align the text to the left
+                                      child: Text(
+                                        widget.summary,
+                                        textAlign: TextAlign
+                                            .start, // Align text to the left
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              fontFamily: 'Inter',
+                                              color: Colors.black,
+                                              fontSize: 15.0,
+                                              lineHeight:
+                                                  1.5, // Controls the line height
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 Align(
-                                  alignment: const AlignmentDirectional(0.91, -0.79),
+                                  alignment:
+                                      const AlignmentDirectional(0.91, -0.79),
                                   child: Container(
                                     width: 46.0,
                                     height: 45.0,
@@ -155,7 +170,8 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                   ),
                                 ),
                                 Align(
-                                  alignment: const AlignmentDirectional(0.88, -0.76),
+                                  alignment:
+                                      const AlignmentDirectional(0.88, -0.76),
                                   child: ClipRRect(
                                     borderRadius: const BorderRadius.only(
                                       bottomLeft: Radius.circular(0.0),
@@ -172,22 +188,43 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                   ),
                                 ),
                                 Align(
-                                  alignment: const AlignmentDirectional(0.0, 1.03),
+                                  alignment: const AlignmentDirectional(
+                                      0.0, 0.0), // Center alignment
                                   child: Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        8.0, 0.0, 8.0, 0.0),
-                                    child: Text(
-                                      'A neural network is divided into three types of layers: input, hidden, and output.\n\n•\tThe input layer receives the training data, the hidden layers learn complex relationships, and the output layer produces the final result.\n\n•\tThe number of neurons in the output \nlayer depends on the type of problem being solved.\n\n•\tDense layers, also known as fully connected layers, are a common building block in neural networks, where each neuron is connected to every neuron in the preceding layer.\n',
-                                      textAlign: TextAlign.start,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Inter',
-                                            color: Colors.black,
-                                            fontSize: 15.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            8.0, 0.0, 8.0, 0.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                            0xFFDFF5E3), // Light green background
+                                        borderRadius: BorderRadius.circular(
+                                            12.0), // Rounded corners
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        maxWidth:
+                                            600.0, // Constrain the box width
+                                        minHeight: 100.0, // Minimum height
+                                      ),
+                                      padding: const EdgeInsets.all(
+                                          16.0), // Inner padding
+                                      child: SingleChildScrollView(
+                                        child: Text(
+                                          widget.summary ??
+                                              "No summary available", // Null check to avoid runtime errors
+                                          textAlign: TextAlign
+                                              .start, // Align text to the start
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                fontFamily: 'Inter',
+                                                color: Colors.black,
+                                                fontSize: 15.0,
+                                                letterSpacing: 0.0,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -212,7 +249,8 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                             child: Stack(
                               children: [
                                 Align(
-                                  alignment: const AlignmentDirectional(-0.9, -0.53),
+                                  alignment:
+                                      const AlignmentDirectional(-0.9, -0.53),
                                   child: Text(
                                     'Quiz time!',
                                     style: FlutterFlowTheme.of(context)
@@ -227,7 +265,8 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                   ),
                                 ),
                                 Align(
-                                  alignment: const AlignmentDirectional(0.89, -0.01),
+                                  alignment:
+                                      const AlignmentDirectional(0.89, -0.01),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
                                     focusColor: Colors.transparent,

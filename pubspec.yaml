@@ -25,7 +25,8 @@ dependencies:
   flutter:
     sdk: flutter
   table_calendar: ^3.0.0 # Use the latest version
-
+  file_picker: ^5.2.4
+  http: ^1.1.0
   flutter_localizations:
     sdk: flutter
   flutter_web_plugins:
@@ -93,7 +94,7 @@ dependencies:
   url_launcher_platform_interface: 2.3.2
   url_launcher_web: 2.3.3
   url_launcher_windows: 3.1.2
-
+  firebase_storage: ^12.3.4
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.0

@@ -1,9 +1,20 @@
+import 'package:summ_a_ize/summary_quiz/summary_quiz_widget.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
@@ -253,6 +264,273 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     );
   }
 
+  String summary = "";
+  String formatSummaryText(String summary) {
+    // Step 1: Add a line space before each '**'
+    String formattedText = summary.replaceAllMapped(RegExp(r'\*\*'), (match) {
+      return '\n${match.group(0)}'; // Add a line space before '**'
+    });
+
+    // Step 2: Add a line space after each '.'
+    formattedText = formattedText.replaceAllMapped(RegExp(r'\.'), (match) {
+      return '${match.group(0)}\n'; // Add a line space after '.'
+    });
+
+    // Step 3: Remove '**' for bold text, single '*', replace '+' with bullet points
+    formattedText = formattedText
+        .replaceAll(RegExp(r'\*\*'), '') // Remove double asterisks for bold
+        .replaceAll('*', '') // Remove single asterisks
+        .replaceAll('+', '•'); // Replace '+' with bullet points
+
+    // Step 4: Ensure all text is aligned to the left
+    final lines = formattedText.split('\n'); // Split the text into lines
+    final List<String> alignedLines = [];
+
+    for (String line in lines) {
+      alignedLines.add(line.trimLeft()); // Trim spaces on the left of each line
+    }
+
+    // Join the lines back into a single formatted string
+    return alignedLines.join('\n');
+  }
+
+  Future<void> _uploadFile() async {
+    // File picker and upload process remains the same
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'], // Restrict to PDF files
+    );
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+
+      final uploadUrl = Uri.parse('https://474f31a408b7.ngrok.app/upload');
+      final summarizeUrl =
+          Uri.parse('https://474f31a408b7.ngrok.app/summarize');
+
+      final uploadRequest = http.MultipartRequest('POST', uploadUrl);
+      uploadRequest.files
+          .add(await http.MultipartFile.fromPath('file', file.path));
+
+      // Show a loading pop-up for file upload
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 10),
+                Text("Uploading file..."),
+              ],
+            ),
+          );
+        },
+      );
+
+      try {
+        // Send upload request
+        final uploadResponse = await uploadRequest.send();
+
+        // Dismiss the file upload dialog
+        Navigator.pop(context);
+
+        if (uploadResponse.statusCode == 200) {
+          final responseBody = await uploadResponse.stream.bytesToString();
+          final jsonResponse = jsonDecode(responseBody);
+
+          if (jsonResponse.containsKey('extracted_text')) {
+            final extractedText = jsonResponse['extracted_text'];
+
+            // Show a success pop-up for file upload
+            await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("File Uploaded Successfully ✔️"),
+                  content: const Text("The file has been uploaded."),
+                  actions: [
+                    TextButton(
+                      child: const Text("OK"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+
+            // Show a loading pop-up for summary generation
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return const AlertDialog(
+                  content: Row(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 10),
+                      Text("Generating summary..."),
+                    ],
+                  ),
+                );
+              },
+            );
+
+            // Call the summarize endpoint
+            final summarizeResponse = await http.post(
+              summarizeUrl,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({'text': extractedText}),
+            );
+
+            // Dismiss the summary generation dialog
+            Navigator.pop(context);
+
+            if (summarizeResponse.statusCode == 200) {
+              final summaryJson = jsonDecode(summarizeResponse.body);
+
+              if (summaryJson.containsKey('summary')) {
+                final summary = summaryJson['summary'];
+                String formattedSummary = formatSummaryText(summary);
+
+                // Navigate to the summary screen with formatted text
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        SummaryQuizWidget(summary: formattedSummary),
+                  ),
+                );
+              } else {
+                // Show error pop-up if summary not found
+                await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text("Error"),
+                      content: const Text("No summary found in response."),
+                      actions: [
+                        TextButton(
+                          child: const Text("OK"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            } else {
+              // Show error pop-up if summarization fails
+              await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Error"),
+                    content: Text(
+                        "Failed to summarize text. Status code: ${summarizeResponse.statusCode}"),
+                    actions: [
+                      TextButton(
+                        child: const Text("OK"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+          } else {
+            // Show error pop-up if extracted text not found
+            await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("Error"),
+                  content: const Text("No extracted text found in response."),
+                  actions: [
+                    TextButton(
+                      child: const Text("OK"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        } else {
+          // Show error pop-up if upload fails
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Error"),
+                content: Text(
+                    "Failed to upload file. Status code: ${uploadResponse.statusCode}"),
+                actions: [
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      } catch (e) {
+        // Dismiss the file upload dialog in case of an error
+        Navigator.pop(context);
+
+        // Show error pop-up
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: Text("Error uploading file: $e"),
+              actions: [
+                TextButton(
+                  child: const Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } else {
+      // Show error pop-up if no file selected or unsupported format
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Error"),
+            content: const Text("No file selected or unsupported format."),
+            actions: [
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -483,9 +761,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   FFButtonWidget(
-                                    onPressed: () async {
-                                      context.pushNamed('summaryQuiz');
-                                    },
+                                    onPressed: _uploadFile,
                                     text: 'Upload',
                                     icon: const Icon(Icons.upload_file),
                                     options: FFButtonOptions(

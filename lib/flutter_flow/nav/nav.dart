@@ -77,8 +77,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) =>
-              appStateNotifier.loggedIn ? const NavBarPage() : const SignUpWidget(),
+          builder: (context, _) => appStateNotifier.loggedIn
+              ? const NavBarPage()
+              : const SignUpWidget(),
         ),
         FFRoute(
           name: 'HomePage',
@@ -95,7 +96,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'summaryQuiz',
           path: '/summaryQuiz',
-          builder: (context, params) => const SummaryQuizWidget(),
+          builder: (context, params) => SummaryQuizWidget(
+            summary: params.getParam('summary', ParamType.String) ??
+                'Default Summary', // Pass the summary
+          ),
         ),
         FFRoute(
           name: 'chatbot',
@@ -120,8 +124,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => const QuizWidget(),
         ),
         FFRoute(
-           name: 'history', // Ensure the name matches exactly
-           path: '/history',
+          name: 'history', // Ensure the name matches exactly
+          path: '/history',
           builder: (context, params) => const HistoryWidget(),
         ),
         FFRoute(
@@ -363,7 +367,8 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() =>
+      const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {
