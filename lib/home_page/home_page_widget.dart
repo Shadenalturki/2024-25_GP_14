@@ -315,9 +315,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     if (result != null) {
       File file = File(result.files.single.path!);
 
-      final uploadUrl = Uri.parse('https://474f31a408b7.ngrok.app/upload');
+      final uploadUrl = Uri.parse('https://summarize.ngrok-free.app/upload');
       final summarizeUrl =
-          Uri.parse('https://474f31a408b7.ngrok.app/summarize');
+          Uri.parse('https://summarize.ngrok-free.app/summarize');
 
       final uploadRequest = http.MultipartRequest('POST', uploadUrl);
       uploadRequest.files
