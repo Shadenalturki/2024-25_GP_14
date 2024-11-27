@@ -84,17 +84,27 @@ showDialog(
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setDialogState) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20.0), // Rounded corners for the dialog
+  ),
           title: const Text('Add Event'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: eventTitleController,
-                decoration: const InputDecoration(labelText: 'Event Title'),
+decoration: InputDecoration(
+    labelText: 'Event Title',
+    labelStyle: const TextStyle(color: Color(0xFF4A4A4A)), // Dark grey for label
+),
               ),
               TextField(
                 controller: eventDescriptionController,
-                decoration: const InputDecoration(labelText: 'Event Description (optional)'),
+             
+                decoration: InputDecoration(
+    labelText: 'Event Description (optional)',
+    labelStyle: const TextStyle(color: Color(0xFF4A4A4A)), // Dark grey for label
+),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -153,12 +163,18 @@ showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
+                        shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20.0), // Rounded corners for the dialog
+  ),
                         title: const Text('Invalid Input'),
                         content: const Text('Event title cannot be empty.'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
                             child: const Text('OK'),
+                            style: TextButton.styleFrom(
+                    foregroundColor: Color(0xFF4A4A4A), // Dark grey
+                            ),
                           ),
                         ],
                       );
@@ -187,10 +203,16 @@ showDialog(
                 Navigator.of(context).pop(); // Close the dialog
               },
               child: const Text('Add'),
+              style: TextButton.styleFrom(
+      foregroundColor: Color(0xFF4A4A4A), // Dark grey
+    ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(), // Close dialog
               child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+      foregroundColor: Color(0xFF4A4A4A), // Dark grey
+    ),
             ),
           ],
         );
@@ -225,18 +247,25 @@ void _showEditEventDialog(Map<String, dynamic> event) {
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setDialogState) {
           return AlertDialog(
+            shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20.0), // Rounded corners for the dialog
+  ),
             title: const Text('Edit Event'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: eventTitleController,
-                  decoration: const InputDecoration(labelText: 'Event Title'),
+                  decoration: InputDecoration(
+    labelText: 'Event Title',
+    labelStyle: const TextStyle(color: Color(0xFF4A4A4A)), // Dark grey label
+                  ),
                 ),
                 TextField(
                   controller: eventDescriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Event Description (optional)',
+                  decoration: InputDecoration(
+    labelText: 'Event Description (optional)',
+    labelStyle: const TextStyle(color: Color(0xFF4A4A4A)), // Dark grey label
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -286,6 +315,9 @@ void _showEditEventDialog(Map<String, dynamic> event) {
               TextButton(
                 onPressed: () => Navigator.of(context).pop(), // Close the dialog
                 child: const Text('Cancel'),
+                style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
               ),
               TextButton(
                 onPressed: () async {
@@ -298,12 +330,19 @@ void _showEditEventDialog(Map<String, dynamic> event) {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
+                          shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20.0), // Rounded corners for the dialog
+  ),
                           title: const Text('Invalid Input'),
-                          content: const Text('Event title and time cannot be empty.'),
+                          content: const Text('Event title cannot be empty.'),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
                               child: const Text('OK'),
+                              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
+                              
                             ),
                           ],
                         );
@@ -346,6 +385,10 @@ void _showEditEventDialog(Map<String, dynamic> event) {
                   Navigator.of(context).pop(); // Close the dialog
                 },
                 child: const Text('Save'),
+                style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
+                
               ),
             ],
           );

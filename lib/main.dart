@@ -74,28 +74,39 @@ class _MyAppState extends State<MyApp> {
         FlutterFlowTheme.saveThemeMode(mode);
       });
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'SummAIze',
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
+@override
+Widget build(BuildContext context) {
+  return MaterialApp.router(
+    title: 'SummAIze',
+    localizationsDelegates: const [
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: const [Locale('en', '')],
+    theme: ThemeData(
+      brightness: Brightness.light,
+      useMaterial3: false,
+      dialogTheme: DialogTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0), // Rounded corners
+        ),
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
+    ),
+    darkTheme: ThemeData(
+      brightness: Brightness.dark,
+      useMaterial3: false,
+      dialogTheme: DialogTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0), // Rounded corners
+        ),
       ),
-      themeMode: _themeMode,
-      routerConfig: _router,
-    );
-  }
+    ),
+    themeMode: _themeMode,
+    routerConfig: _router,
+  );
+}
+
 }
 
 class NavBarPage extends StatefulWidget {

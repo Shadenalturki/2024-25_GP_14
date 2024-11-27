@@ -136,6 +136,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 Navigator.of(context).pop();
               },
               child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
             ),
             TextButton(
               onPressed: () {
@@ -156,6 +159,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
                             child: const Text('OK'),
+                            style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                           ),
                         ],
                       );
@@ -164,6 +170,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 }
               },
               child: const Text('Add'),
+              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
             ),
           ],
         );
@@ -208,6 +217,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 Navigator.of(context).pop();
               },
               child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
             ),
             TextButton(
               onPressed: () async {
@@ -260,6 +272,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
                             child: const Text('OK'),
+                            style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                           ),
                         ],
                       );
@@ -268,6 +283,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 }
               },
               child: const Text('Save'),
+              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
             ),
           ],
         );
@@ -364,6 +382,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   actions: [
                     TextButton(
                       child: const Text("OK"),
+                      style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -426,6 +447,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                       actions: [
                         TextButton(
                           child: const Text("OK"),
+                          style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -447,6 +471,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     actions: [
                       TextButton(
                         child: const Text("OK"),
+                        style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
@@ -467,6 +494,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   actions: [
                     TextButton(
                       child: const Text("OK"),
+                      style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -488,6 +518,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 actions: [
                   TextButton(
                     child: const Text("OK"),
+                    style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -511,6 +544,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               actions: [
                 TextButton(
                   child: const Text("OK"),
+                  style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -531,6 +567,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             actions: [
               TextButton(
                 child: const Text("OK"),
+                style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
