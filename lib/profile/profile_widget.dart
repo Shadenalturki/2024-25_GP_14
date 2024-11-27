@@ -154,6 +154,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                 onPressed: () =>
                                     Navigator.pop(alertDialogContext, false),
                                 child: const Text('Cancel'),
+                                style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                               ),
                               TextButton(
                                 onPressed: () async {
@@ -162,6 +165,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                   GoRouter.of(context).go('/signUp');
                                 },
                                 child: const Text('Confirm'),
+                                style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                               ),
                             ],
                           );

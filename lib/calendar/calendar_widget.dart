@@ -109,7 +109,7 @@ decoration: InputDecoration(
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF008000), // Button background color (Green)
+    backgroundColor: const Color(0xFF104036), //  button background 
                   foregroundColor: Colors.white, // Button text color
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8), // Rounded corners
@@ -271,7 +271,7 @@ void _showEditEventDialog(Map<String, dynamic> event) {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF008000), // Button background color (Green)
+                   backgroundColor: const Color(0xFF104036), // Button background color (Green)
                     foregroundColor: Colors.white, // Button text color
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8), // Rounded corners

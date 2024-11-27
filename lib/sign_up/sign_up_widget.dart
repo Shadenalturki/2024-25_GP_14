@@ -896,6 +896,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                     TextButton(
                                                                       child: Text(
                                                                           "OK"),
+                                                                          style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                       onPressed:
                                                                           () {
                                                                         Navigator.of(context)
@@ -963,6 +966,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                     TextButton(
                                                                       child: Text(
                                                                           "OK"),
+                                                                          style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                       onPressed:
                                                                           () {
                                                                         Navigator.of(context)
@@ -1413,6 +1419,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                         TextButton(
                                                                           child:
                                                                               Text("OK"),
+                                                                              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                           onPressed:
                                                                               () {
                                                                             Navigator.of(context).pop();
@@ -1445,6 +1454,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                         TextButton(
                                                                           child:
                                                                               Text("OK"),
+                                                                              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                           onPressed:
                                                                               () {
                                                                             Navigator.of(context).pop();
@@ -1478,6 +1490,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                         TextButton(
                                                                           child:
                                                                               Text("OK"),
+                                                                              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                           onPressed:
                                                                               () {
                                                                             Navigator.of(context).pop();
@@ -1522,6 +1537,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                           TextButton(
                                                                             child:
                                                                                 Text("OK"),
+                                                                                style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                             onPressed:
                                                                                 () {
                                                                               Navigator.of(context).pop();
@@ -1550,6 +1568,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                         TextButton(
                                                                           child:
                                                                               Text("OK"),
+                                                                              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                           onPressed:
                                                                               () {
                                                                             Navigator.of(context).pop();
@@ -1592,6 +1613,9 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                                         TextButton(
                                                                           child:
                                                                               Text("OK"),
+                                                                              style: TextButton.styleFrom(
+    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+  ),
                                                                           onPressed:
                                                                               () {
                                                                             Navigator.of(context).pop();
