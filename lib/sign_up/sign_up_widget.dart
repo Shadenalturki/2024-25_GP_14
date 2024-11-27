@@ -796,112 +796,69 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                         EdgeInsetsDirectional
                                                             .fromSTEB(0.0, 0.0,
                                                                 0.0, 16.0),
-                                                    child: Container(
-                                                      width: double.infinity,
-                                                      child: TextFormField(
-                                                        controller: _model
-                                                            .confirmPasswordTextController,
+                                                   child: Container(
+  width: double.infinity,
+  child: TextFormField(
+    controller: _model.confirmPasswordTextController,
+    focusNode: _model.confirmPasswordFocusNode,
+    obscureText: !_model.confirmPasswordVisibility, // Toggle with confirmPasswordVisibility
+    decoration: InputDecoration(
+      labelText: 'Confirm Password',
+      labelStyle: TextStyle(
+        color: const Color.fromARGB(255, 29, 33, 29), // Dark grey color
+        fontFamily: 'Inter', // Match font for consistency
+        fontSize: 16, // Optional: Adjust font size if needed
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).alternate,
+          width: 2.0,
+        ),
+        borderRadius: BorderRadius.circular(40.0),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).primary,
+          width: 2.0,
+        ),
+        borderRadius: BorderRadius.circular(40.0),
+      ),
+      filled: true,
+      fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+      contentPadding: EdgeInsets.all(24.0),
+      suffixIcon: InkWell(
+        onTap: () => setState(() {
+          _model.confirmPasswordVisibility =
+              !_model.confirmPasswordVisibility;
+        }),
+        child: Icon(
+          _model.confirmPasswordVisibility
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined,
+          color: FlutterFlowTheme.of(context).secondaryText,
+          size: 24.0,
+        ),
+      ),
+    ),
+    style: FlutterFlowTheme.of(context).bodyLarge.override(
+          fontFamily: 'Inter',
+          letterSpacing: 0.0,
+          color: const Color.fromARGB(255, 29, 33, 29), // Dark grey for input text
+        ),
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return 'Please confirm your password.';
+      }
 
-                                                        focusNode: _model
-                                                            .confirmPasswordFocusNode,
+      if (value != _model.passwordSignUpTextController.text) {
+        return 'Passwords do not match.';
+      }
 
-                                                        obscureText: !_model
-                                                            .confirmPasswordVisibility, // Toggle with confirmPasswordVisibility
+      return null;
+    },
+  ),
+),
 
-                                                        decoration:
-                                                            InputDecoration(
-                                                          labelText:
-                                                              'Confirm Password',
-                                                          enabledBorder:
-                                                              OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .alternate,
-                                                              width: 2.0,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        40.0),
-                                                          ),
-                                                          focusedBorder:
-                                                              OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .primary,
-                                                              width: 2.0,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        40.0),
-                                                          ),
-                                                          filled: true,
-                                                          fillColor: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryBackground,
-                                                          contentPadding:
-                                                              EdgeInsets.all(
-                                                                  24.0),
-                                                          suffixIcon: InkWell(
-                                                            onTap: () =>
-                                                                setState(() {
-                                                              _model.confirmPasswordVisibility =
-                                                                  !_model
-                                                                      .confirmPasswordVisibility;
-                                                            }),
-                                                            child: Icon(
-                                                              _model.confirmPasswordVisibility
-                                                                  ? Icons
-                                                                      .visibility_outlined
-                                                                  : Icons
-                                                                      .visibility_off_outlined,
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .secondaryText,
-                                                              size: 24.0,
-                                                            ),
-                                                          ),
-                                                        ),
-
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Inter',
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  color: const Color
-                                                                      .fromARGB(
-                                                                      255,
-                                                                      29,
-                                                                      33,
-                                                                      29),
-                                                                ),
-
-                                                        validator: (value) {
-                                                          if (value == null ||
-                                                              value.isEmpty) {
-                                                            return 'Please confirm your password.';
-                                                          }
-
-                                                          if (value !=
-                                                              _model
-                                                                  .passwordSignUpTextController
-                                                                  .text) {
-                                                            return 'Passwords do not match.';
-                                                          }
-
-                                                          return null;
-                                                        },
-                                                      ),
-                                                    ),
                                                   ),
                                                   Align(
                                                     alignment:
