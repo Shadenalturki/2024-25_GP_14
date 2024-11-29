@@ -296,10 +296,11 @@ class FirebaseAuthManager extends AuthManager
           'Error: The supplied auth credential is incorrect, malformed or has expired',
         _ => 'Error: ${e.message!}',
       };
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
-      );
+     // ScaffoldMessenger.of(context).hideCurrentSnackBar();
+// ScaffoldMessenger.of(context).showSnackBar(
+//   SnackBar(content: Text(errorMsg)),
+// );
+
       return null;
     }
   }
