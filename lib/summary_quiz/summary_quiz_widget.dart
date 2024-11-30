@@ -120,33 +120,53 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                             ),
                             child: Stack(
                               children: [
-                                Align(
-                                  alignment:
-                                      const AlignmentDirectional(-0.9, -0.85),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(
-                                        8.0), // Add padding around the text
-                                    child: Align(
-                                      alignment: Alignment
-                                          .centerLeft, // Align the text to the left
-                                      child: Text(
-                                        widget.summary,
-                                        textAlign: TextAlign
-                                            .start, // Align text to the left
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Inter',
-                                              color: Colors.black,
-                                              fontSize: 15.0,
-                                              lineHeight:
-                                                  1.5, // Controls the line height
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                 Align(
+      alignment: AlignmentDirectional(-0.9, -0.85),
+      child: Text(
+        'Summary',
+        style: FlutterFlowTheme.of(context).bodyMedium.override(
+              fontFamily: 'DM Sans',
+              color: Color(0xFF202325),
+              fontSize: 18,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+    ),
+                               Positioned(
+      top: 80, // Increase the top value to move the container down
+      left: 0,
+      right: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0), // Add padding around the text
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFE1EEEB), // Light green background
+            borderRadius: BorderRadius.circular(12.0), // Rounded corners
+          ),
+          constraints: const BoxConstraints(
+            maxWidth: 600.0, // Constrain the box width
+            minHeight: 100.0, // Minimum height
+            maxHeight: 290.0, // Maximum height
+          ),
+          padding: const EdgeInsets.fromLTRB(16.0, 1.0, 16.0, 1.0), // Inner padding
+          
+          child: SingleChildScrollView(
+            child: Text(
+              widget.summary ?? "No summary available", // Null check to avoid runtime errors
+              textAlign: TextAlign.start, // Align text to the start
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                fontFamily: 'Inter',
+                color: Colors.black,
+                fontSize: 15.0,
+                letterSpacing: 0.0,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
                                 Align(
                                   alignment:
                                       const AlignmentDirectional(0.91, -0.79),
@@ -187,47 +207,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                     ),
                                   ),
                                 ),
-                                Align(
-                                  alignment: const AlignmentDirectional(
-                                      0.0, 0.0), // Center alignment
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsetsDirectional.fromSTEB(
-                                            8.0, 0.0, 8.0, 0.0),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(
-                                            0xFFDFF5E3), // Light green background
-                                        borderRadius: BorderRadius.circular(
-                                            12.0), // Rounded corners
-                                      ),
-                                      constraints: const BoxConstraints(
-                                        maxWidth:
-                                            600.0, // Constrain the box width
-                                        minHeight: 100.0, // Minimum height
-                                      ),
-                                      padding: const EdgeInsets.all(
-                                          16.0), // Inner padding
-                                      child: SingleChildScrollView(
-                                        child: Text(
-                                          widget.summary ??
-                                              "No summary available", // Null check to avoid runtime errors
-                                          textAlign: TextAlign
-                                              .start, // Align text to the start
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Inter',
-                                                color: Colors.black,
-                                                fontSize: 15.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                
                               ],
                             ),
                           ),
