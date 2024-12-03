@@ -24,4 +24,4 @@ https://github.com/Shadenalturki/2024-25_GP_14
 • Turn on an Android Emulator or connect an android mobile to your computer using
 USB.
 
-• Run SummAIze application.
+• Befor you Run SummAIze application, run the SummAIzeApp.ipynp in colab using GPU , if colab ask for access hugging face token use this HF_token=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.
