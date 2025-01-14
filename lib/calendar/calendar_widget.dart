@@ -529,147 +529,186 @@ Expanded(
         ),
         // Event List
         Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: model.upcomingEvents.length,
-            itemBuilder: (context, index) {
-              final event = model.upcomingEvents[index];
-              final eventDetails = event['eventDetails'];
-              return Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white, // Card background
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: mediumGreen, // Medium green border
-                      width: 1,
+  child: ListView.builder(
+    padding: EdgeInsets.zero,
+    itemCount: model.upcomingEvents.length,
+    itemBuilder: (context, index) {
+      final event = model.upcomingEvents[index];
+      final eventDetails = event['eventDetails'];
+      return Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white, // Card background
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: mediumGreen, // Medium green border
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(2, 2),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 16, horizontal: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event['eventName'],
+                      style: FlutterFlowTheme.of(context)
+                          .titleMedium
+                          .override(
+                            fontFamily: 'Inter Tight',
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF14181B),
+                          ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
+                    if (eventDetails != null && eventDetails.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16, horizontal: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              event['eventName'],
+                        padding: const EdgeInsets.only(
+                            top: 8.0, bottom: 8.0),
+                        child: Text(
+                          eventDetails,
+                          style: FlutterFlowTheme.of(context)
+                              .bodySmall
+                              .override(
+                                fontFamily: 'Inter',
+                                color: mediumGreen,
+                              ),
+                        ),
+                      ),
+                    Row(
+                      children: [
+                        if (event['eventDate'] != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 4.0),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(
+                                  77, 238, 202, 96),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Text(
+                              DateFormat('h:mm a').format(
+                                CalendarModel.convertToDateTime(
+                                    event['eventDate']),
+                              ),
                               style: FlutterFlowTheme.of(context)
-                                  .titleMedium
+                                  .bodyMedium
                                   .override(
-                                    fontFamily: 'Inter Tight',
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF14181B),
+                                    fontFamily: 'Inter',
+                                    color: const Color(0xFFC62828),
                                   ),
                             ),
-                            if (eventDetails != null &&
-                                eventDetails.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 8.0, bottom: 8.0),
-                                child: Text(
-                                  eventDetails,
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        fontFamily: 'Inter',
-                                        color: mediumGreen,
-                                      ),
-                                ),
+                          ),
+                          const SizedBox(width: 8.0),
+                        ] else ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 4.0),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(
+                                  77, 238, 202, 96),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Text(
+                              'No time selected',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'Inter',
+                                    color: const Color(0xFF7B9076),
+                                  ),
+                            ),
+                          ),
+                        ],
+                        Text(
+                          DateFormat('EEE, MMM d, yyyy').format(
+                            CalendarModel.convertToDateTime(
+                                event['eventDate']),
+                          ),
+                          style: FlutterFlowTheme.of(context)
+                              .bodySmall
+                              .override(
+                                fontFamily: 'Inter',
+                                color: mediumGreen,
                               ),
-                            Row(
-                              children: [
-                                if (event['eventDate'] != null) ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 4.0),
-                                    decoration: BoxDecoration(
-                                      color: const Color.fromARGB(
-                                          77, 238, 202, 96),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: Text(
-                                      DateFormat('h:mm a').format(
-                                        CalendarModel.convertToDateTime(
-                                            event['eventDate']),
-                                      ),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Inter',
-                                            color: const Color(0xFFC62828),
-                                          ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8.0),
-                                ] else ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 4.0),
-                                    decoration: BoxDecoration(
-                                      color: const Color.fromARGB(
-                                          77, 238, 202, 96),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: Text(
-                                      'No time selected',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Inter',
-                                            color: const Color(0xFF7B9076),
-                                          ),
-                                    ),
-                                  ),
-                                ],
-                                Text(
-                                  DateFormat('EEE, MMM d, yyyy').format(
-                                    CalendarModel.convertToDateTime(
-                                        event['eventDate']),
-                                  ),
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        fontFamily: 'Inter',
-                                        color: mediumGreen,
-                                      ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Positioned icons: Edit and Delete
+              Positioned(
+                right: 16,
+                top: 0,
+                bottom: 0,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit,
+                          color: Color(0xFF104036)),
+                      onPressed: () {
+                        _showEditEventDialog(event);
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete,
+                          color: Color(0xFF104036)),
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Delete Event'),
+                              content: const Text(
+                                  'Are you sure you want to delete this event?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancel'),
+                                  style: TextButton.styleFrom(
+                foregroundColor: Colors.black, // Set text color to black
+              ),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Delete'),
+                                  style: TextButton.styleFrom(
+                foregroundColor: Colors.black, // Set text color to black
+              ),
                                 ),
                               ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Positioned edit icon
-                      Positioned(
-                        right: 16,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: IconButton(
-                            icon: const Icon(Icons.edit,
-                                color: Color(0xFF104036)),
-                            onPressed: () {
-                              _showEditEventDialog(event);
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                            );
+                          },
+                        );
+
+                        if (confirmed == true) {
+                          await _model.deleteEvent(event['id']);
+                        }
+                      },
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ],
           ),
         ),
+      );
+    },
+  ),
+),
       ],
     ),
   ),

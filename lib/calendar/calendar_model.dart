@@ -106,6 +106,19 @@ class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier
     }
   }
 
+  // Function to delete an event from Firestore
+  Future<void> deleteEvent(String eventId) async {
+    try {
+      // Delete the event from Firestore
+      await FirebaseFirestore.instance.collection('events').doc(eventId).delete();
+
+      // Refresh the list of events after deleting
+      await fetchEvents();
+    } catch (e) {
+      print('Error deleting event from Firestore: $e');
+    }
+  }
+
   // Static utility function to handle Timestamp or DateTime conversion.
   static DateTime convertToDateTime(dynamic value) {
     if (value is Timestamp) {
