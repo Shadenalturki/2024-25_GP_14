@@ -70,7 +70,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     }
   }
 
-  /// Save a course to the Firestore database
+  /// Save a course to the Firestore database with a unique courseId
   Future<void> _saveCourseToDatabase(
       String courseName, String courseDescription) async {
     final userId = currentUser?.uid;
@@ -95,19 +95,25 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         return;
       }
 
+      // Create a new document reference to get a unique courseId
+      final newDocRef = FirebaseFirestore.instance.collection('courses').doc();
+
       // If no duplicates, proceed to save the course
       final newCourse = {
+        'courseId': newDocRef.id, // Unique courseId
         'courseName': courseName,
         'courseDescription': courseDescription,
         'userId': userId,
         'createdAt': FieldValue.serverTimestamp(),
       };
 
-      await FirebaseFirestore.instance.collection('courses').add(newCourse);
+      await newDocRef.set(newCourse);
 
       setState(() {
-        courses.insert(0,
-            {'courseName': courseName, 'courseDescription': courseDescription});
+        courses.insert(0, {
+          'courseName': courseName,
+          'courseDescription': courseDescription,
+        });
       });
 
       _showSuccessDialog('Success', 'Course added successfully.');
@@ -158,7 +164,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     );
   }
 
-  /// Delete a course from Firestore and update the UI
+  /// Delete a course from Firestore using courseId
   Future<void> _deleteCourseFromDatabase(int index) async {
     final userId = currentUser?.uid;
 
@@ -170,24 +176,21 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     }
 
     try {
-      // Get the document ID for the course to delete
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('courses')
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Get the courseId for the course to delete
+      final courseId = courses[index]['courseId'];
 
-      final docId = querySnapshot.docs[index].id;
+      if (courseId != null) {
+        // Delete the course from Firestore
+        await FirebaseFirestore.instance
+            .collection('courses')
+            .doc(courseId)
+            .delete();
 
-      // Delete the course from Firestore
-      await FirebaseFirestore.instance
-          .collection('courses')
-          .doc(docId)
-          .delete();
-
-      // Remove the course from the local list
-      setState(() {
-        courses.removeAt(index);
-      });
+        // Remove the course from the local list
+        setState(() {
+          courses.removeAt(index);
+        });
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error deleting course: $e')),
