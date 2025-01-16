@@ -40,71 +40,69 @@ class CalendarModel extends FlutterFlowModel<CalendarWidget> with ChangeNotifier
   }
 
   // Function to add an event to Firestore
-  Future<void> addEvent(String userId, String title, String description, DateTime eventDate) async {
-    try {
-      // Add the event to Firestore
-      await FirebaseFirestore.instance.collection('events').add({
-        'userId': userId,
-        'eventName': title,
-        'eventDetails': description,
-        'eventDate': Timestamp.fromDate(eventDate), // Convert DateTime to Firestore Timestamp
-      });
+Future<void> fetchEvents() async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
 
-      // Refresh the list of events after adding the new event
-      await fetchEvents();
-    } catch (e) {
-      print('Error adding event to Firestore: $e');
+    if (user == null) {
+      print('No user is logged in.');
+      return;
     }
-  }
 
-  // Function to fetch events from Firestore
-  Future<void> fetchEvents() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
+    final eventsQuerySnapshot = await FirebaseFirestore.instance
+        .collection('events')
+        .where('userId', isEqualTo: user.uid)
+        .get();
 
-      if (user == null) {
-        print('No user is logged in.');
-        return;
+    events = await Future.wait(eventsQuerySnapshot.docs.map((doc) async {
+      final data = doc.data();
+      String? courseName;
+
+      // Check if the event has a linked course
+      if (data['courseId'] != null) {
+        final courseSnapshot = await FirebaseFirestore.instance
+            .collection('courses')
+            .doc(data['courseId'])
+            .get();
+
+        if (courseSnapshot.exists) {
+          courseName = courseSnapshot['courseName'];
+        }
       }
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('events')
-          .where('userId', isEqualTo: user.uid)
-          .get();
+      return {
+        'id': doc.id,
+        'eventName': data['eventName'],
+        'eventDetails': data['eventDetails'],
+        'eventDate': data['eventDate'] is Timestamp
+            ? (data['eventDate'] as Timestamp).toDate()
+            : DateTime.parse(data['eventDate'] as String),
+        'courseName': courseName, // Include course name
+      };
+    }).toList());
 
-      events = querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'id': doc.id,
-          'eventName': data['eventName'],
-          'eventDetails': data['eventDetails'],
-          'eventDate': data['eventDate'] is Timestamp
-              ? (data['eventDate'] as Timestamp).toDate()
-              : DateTime.parse(data['eventDate'] as String),
-        };
-      }).toList();
+    // Sort events by eventDate in ascending order
+    events.sort((a, b) {
+      final dateA = a['eventDate'] as DateTime;
+      final dateB = b['eventDate'] as DateTime;
+      return dateA.compareTo(dateB);
+    });
 
-      // Sort events by eventDate in ascending order
-      events.sort((a, b) {
-        final dateA = a['eventDate'] as DateTime;
-        final dateB = b['eventDate'] as DateTime;
-        return dateA.compareTo(dateB);
-      });
+    // Extract unique dates for highlighting
+    markedDates = events
+        .map((event) {
+          final eventDate = event['eventDate'] as DateTime;
+          return DateTime(eventDate.year, eventDate.month, eventDate.day); // Only the date
+        })
+        .toSet()
+        .toList();
 
-      // Extract unique dates for highlighting
-      markedDates = events
-          .map((event) {
-            final eventDate = event['eventDate'] as DateTime;
-            return DateTime(eventDate.year, eventDate.month, eventDate.day); // Only the date
-          })
-          .toSet()
-          .toList();
-
-      notifyListeners();
-    } catch (e) {
-      print('Error fetching events from Firestore: $e');
-    }
+    notifyListeners();
+  } catch (e) {
+    print('Error fetching events from Firestore: $e');
   }
+}
+
 
   // Function to delete an event from Firestore
   Future<void> deleteEvent(String eventId) async {
