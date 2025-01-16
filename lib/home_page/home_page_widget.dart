@@ -76,13 +76,26 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     final userId = currentUser?.uid;
 
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: User not logged in')),
-      );
+      _showErrorDialog('Error', 'User not logged in.');
       return;
     }
 
     try {
+      // Check if a course with the same name already exists
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .where('userId', isEqualTo: userId)
+          .where('courseName', isEqualTo: courseName)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Show error pop-up if a duplicate course is found
+        _showErrorDialog(
+            'Duplicate Course', 'A course with this name already exists.');
+        return;
+      }
+
+      // If no duplicates, proceed to save the course
       final newCourse = {
         'courseName': courseName,
         'courseDescription': courseDescription,
@@ -96,49 +109,91 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         courses.insert(0,
             {'courseName': courseName, 'courseDescription': courseDescription});
       });
+
+      _showSuccessDialog('Success', 'Course added successfully.');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving course: $e')),
-      );
+      _showErrorDialog('Error', 'Error saving course: $e');
     }
   }
 
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// Delete a course from Firestore and update the UI
-Future<void> _deleteCourseFromDatabase(int index) async {
-  final userId = currentUser?.uid;
+  Future<void> _deleteCourseFromDatabase(int index) async {
+    final userId = currentUser?.uid;
 
-  if (userId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error: User not logged in')),
-    );
-    return;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: User not logged in')),
+      );
+      return;
+    }
+
+    try {
+      // Get the document ID for the course to delete
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final docId = querySnapshot.docs[index].id;
+
+      // Delete the course from Firestore
+      await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(docId)
+          .delete();
+
+      // Remove the course from the local list
+      setState(() {
+        courses.removeAt(index);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting course: $e')),
+      );
+    }
   }
-
-  try {
-    // Get the document ID for the course to delete
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('courses')
-        .where('userId', isEqualTo: userId)
-        .get();
-
-    final docId = querySnapshot.docs[index].id;
-
-    // Delete the course from Firestore
-    await FirebaseFirestore.instance.collection('courses').doc(docId).delete();
-
-    // Remove the course from the local list
-    setState(() {
-      courses.removeAt(index);
-    });
-
-    
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error deleting course: $e')),
-    );
-  }
-}
-
 
   void _showAddCourseDialog() {
     TextEditingController courseNameController = TextEditingController();
@@ -174,8 +229,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
               },
               child: const Text('Cancel'),
               style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -197,8 +252,9 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                             onPressed: () => Navigator.of(context).pop(),
                             child: const Text('OK'),
                             style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                              foregroundColor:
+                                  Color(0xFF4A4A4A), // Dark grey text
+                            ),
                           ),
                         ],
                       );
@@ -208,8 +264,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
               },
               child: const Text('Add'),
               style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+              ),
             ),
           ],
         );
@@ -255,8 +311,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
               },
               child: const Text('Cancel'),
               style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -310,8 +366,9 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                             onPressed: () => Navigator.of(context).pop(),
                             child: const Text('OK'),
                             style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                              foregroundColor:
+                                  Color(0xFF4A4A4A), // Dark grey text
+                            ),
                           ),
                         ],
                       );
@@ -321,8 +378,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
               },
               child: const Text('Save'),
               style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+              ),
             ),
           ],
         );
@@ -420,8 +477,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                     TextButton(
                       child: const Text("OK"),
                       style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                        foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                      ),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -485,8 +542,9 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                         TextButton(
                           child: const Text("OK"),
                           style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                            foregroundColor:
+                                Color(0xFF4A4A4A), // Dark grey text
+                          ),
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -509,8 +567,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                       TextButton(
                         child: const Text("OK"),
                         style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                          foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
@@ -532,8 +590,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                     TextButton(
                       child: const Text("OK"),
                       style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                        foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                      ),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -556,8 +614,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                   TextButton(
                     child: const Text("OK"),
                     style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                      foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                    ),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -582,8 +640,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                 TextButton(
                   child: const Text("OK"),
                   style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -605,8 +663,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
               TextButton(
                 child: const Text("OK"),
                 style: TextButton.styleFrom(
-    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-  ),
+                  foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                ),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -779,158 +837,167 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                 ],
               ),
             ),
-          Expanded(
-  child: ListView.builder(
-    itemCount: courses.length,
-    itemBuilder: (context, index) {
-      final course = courses[index];
-      return Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16.0, vertical: 8.0),
-        child: Material(
-          elevation: 5.0,
-          borderRadius: BorderRadius.circular(20.0),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.0),
-              border: Border.all(
-                color: const Color(0xFFC5CAC6),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(13.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          course['courseName']!,
-                          style: FlutterFlowTheme.of(context)
-                              .headlineSmall
-                              .override(
-                                fontFamily: 'Outfit',
-                                color: const Color(0xFF14181B),
-                                fontSize: 24.0,
-                              ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit,
-                                color: Color(0xFF104036)),
-                            onPressed: () {
-                              _showEditCourseDialog(index);
-                            },
+            Expanded(
+              child: ListView.builder(
+                itemCount: courses.length,
+                itemBuilder: (context, index) {
+                  final course = courses[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Material(
+                      elevation: 5.0,
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20.0),
+                          border: Border.all(
+                            color: const Color(0xFFC5CAC6),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete,
-                                color: Color(0xFF104036)),
-                            onPressed: () async {
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Delete Course'),
-                                    content: const Text('Are you sure you want to delete this course?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.of(context).pop(false),
-                                        child: const Text('Cancel'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.black,
-                                        ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(13.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      course['courseName']!,
+                                      style: FlutterFlowTheme.of(context)
+                                          .headlineSmall
+                                          .override(
+                                            fontFamily: 'Outfit',
+                                            color: const Color(0xFF14181B),
+                                            fontSize: 24.0,
+                                          ),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Color(0xFF104036)),
+                                        onPressed: () {
+                                          _showEditCourseDialog(index);
+                                        },
                                       ),
-                                      TextButton(
-                                        onPressed: () => Navigator.of(context).pop(true),
-                                        child: const Text('Delete'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.black,
-                                        ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Color(0xFF104036)),
+                                        onPressed: () async {
+                                          final confirmed =
+                                              await showDialog<bool>(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title:
+                                                    const Text('Delete Course'),
+                                                content: const Text(
+                                                    'Are you sure you want to delete this course?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(false),
+                                                    child: const Text('Cancel'),
+                                                    style: TextButton.styleFrom(
+                                                      foregroundColor:
+                                                          Colors.black,
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(true),
+                                                    child: const Text('Delete'),
+                                                    style: TextButton.styleFrom(
+                                                      foregroundColor:
+                                                          Colors.black,
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+
+                                          if (confirmed == true) {
+                                            await _deleteCourseFromDatabase(
+                                                index);
+                                          }
+                                        },
                                       ),
                                     ],
-                                  );
-                                },
-                              );
-
-                              if (confirmed == true) {
-                                await _deleteCourseFromDatabase(index);
-                              }
-                            },
+                                  ),
+                                ],
+                              ),
+                              if (course['courseDescription']!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 0.0, bottom: 10.0),
+                                  child: Text(
+                                    course['courseDescription']!,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'Outfit',
+                                          color: const Color(0xFF8F9291),
+                                          fontSize: 16.0,
+                                        ),
+                                  ),
+                                ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  FFButtonWidget(
+                                    onPressed: _uploadFile,
+                                    text: 'Upload',
+                                    icon: const Icon(Icons.upload_file),
+                                    options: FFButtonOptions(
+                                      height: 40.0,
+                                      color: const Color(0xFF104036),
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            fontFamily: 'Inter Tight',
+                                            color: Colors.white,
+                                          ),
+                                      borderRadius: BorderRadius.circular(25.0),
+                                    ),
+                                  ),
+                                  FFButtonWidget(
+                                    onPressed: () async {
+                                      context.pushNamed('history');
+                                    },
+                                    text: 'History',
+                                    icon: const Icon(Icons.history),
+                                    options: FFButtonOptions(
+                                      height: 40.0,
+                                      color: const Color(0xFF104036),
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            fontFamily: 'Inter Tight',
+                                            color: Colors.white,
+                                          ),
+                                      borderRadius: BorderRadius.circular(25.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  if (course['courseDescription']!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 0.0, bottom: 10.0),
-                      child: Text(
-                        course['courseDescription']!,
-                        style: FlutterFlowTheme.of(context)
-                            .bodyMedium
-                            .override(
-                              fontFamily: 'Outfit',
-                              color: const Color(0xFF8F9291),
-                              fontSize: 16.0,
-                            ),
+                        ),
                       ),
                     ),
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceEvenly,
-                    children: [
-                      FFButtonWidget(
-                        onPressed: _uploadFile,
-                        text: 'Upload',
-                        icon: const Icon(Icons.upload_file),
-                        options: FFButtonOptions(
-                          height: 40.0,
-                          color: const Color(0xFF104036),
-                          textStyle: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .override(
-                                fontFamily: 'Inter Tight',
-                                color: Colors.white,
-                              ),
-                          borderRadius: BorderRadius.circular(25.0),
-                        ),
-                      ),
-                      FFButtonWidget(
-                        onPressed: () async {
-                          context.pushNamed('history');
-                        },
-                        text: 'History',
-                        icon: const Icon(Icons.history),
-                        options: FFButtonOptions(
-                          height: 40.0,
-                          color: const Color(0xFF104036),
-                          textStyle: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .override(
-                                fontFamily: 'Inter Tight',
-                                color: Colors.white,
-                              ),
-                          borderRadius: BorderRadius.circular(25.0),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-          ),
-        ),
-      );
-    },
-  ),
-),
-
           ],
         ),
       ),
