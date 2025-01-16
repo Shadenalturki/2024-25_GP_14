@@ -34,7 +34,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     _fetchCoursesFromDatabase();
   }
 
-  /// Fetch courses from Firestore for the current user
   Future<void> _fetchCoursesFromDatabase() async {
     final userId = currentUser?.uid;
 
@@ -55,6 +54,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       final fetchedCourses = querySnapshot.docs.map((doc) {
         final data = doc.data();
         return {
+          'courseId': doc.id, // Include the courseId
           'courseName': data['courseName'] as String,
           'courseDescription': data['courseDescription'] as String? ?? '',
         };
@@ -115,8 +115,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
           'courseDescription': courseDescription,
         });
       });
-
-      _showSuccessDialog('Success', 'Course added successfully.');
     } catch (e) {
       _showErrorDialog('Error', 'Error saving course: $e');
     }
