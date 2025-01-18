@@ -162,39 +162,52 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     );
   }
 
-  /// Delete a course from Firestore using courseId
-  Future<void> _deleteCourseFromDatabase(int index) async {
-    final userId = currentUser?.uid;
+Future<void> _deleteCourseFromDatabase(int index) async {
+  final userId = currentUser?.uid;
 
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: User not logged in')),
-      );
-      return;
-    }
-
-    try {
-      // Get the courseId for the course to delete
-      final courseId = courses[index]['courseId'];
-
-      if (courseId != null) {
-        // Delete the course from Firestore
-        await FirebaseFirestore.instance
-            .collection('courses')
-            .doc(courseId)
-            .delete();
-
-        // Remove the course from the local list
-        setState(() {
-          courses.removeAt(index);
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting course: $e')),
-      );
-    }
+  if (userId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error: User not logged in')),
+    );
+    return;
   }
+
+  try {
+    // Get the courseId for the course to delete
+    final courseId = courses[index]['courseId'];
+
+    if (courseId != null) {
+      // Step 1: Find all events linked to the course
+      final eventsQuery = await FirebaseFirestore.instance
+          .collection('events')
+          .where('courseId', isEqualTo: courseId)
+          .get();
+
+      // Step 2: Delete all events linked to the course
+      for (var eventDoc in eventsQuery.docs) {
+        await eventDoc.reference.delete();
+      }
+
+      // Step 3: Delete the course itself
+      await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(courseId)
+          .delete();
+
+      // Remove the course from the local list
+      setState(() {
+        courses.removeAt(index);
+      });
+
+      
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error deleting course: $e')),
+    );
+  }
+}
+
 
   void _showAddCourseDialog() {
     TextEditingController courseNameController = TextEditingController();
