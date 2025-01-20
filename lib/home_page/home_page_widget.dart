@@ -162,52 +162,49 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     );
   }
 
-Future<void> _deleteCourseFromDatabase(int index) async {
-  final userId = currentUser?.uid;
+  Future<void> _deleteCourseFromDatabase(int index) async {
+    final userId = currentUser?.uid;
 
-  if (userId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error: User not logged in')),
-    );
-    return;
-  }
-
-  try {
-    // Get the courseId for the course to delete
-    final courseId = courses[index]['courseId'];
-
-    if (courseId != null) {
-      // Step 1: Find all events linked to the course
-      final eventsQuery = await FirebaseFirestore.instance
-          .collection('events')
-          .where('courseId', isEqualTo: courseId)
-          .get();
-
-      // Step 2: Delete all events linked to the course
-      for (var eventDoc in eventsQuery.docs) {
-        await eventDoc.reference.delete();
-      }
-
-      // Step 3: Delete the course itself
-      await FirebaseFirestore.instance
-          .collection('courses')
-          .doc(courseId)
-          .delete();
-
-      // Remove the course from the local list
-      setState(() {
-        courses.removeAt(index);
-      });
-
-      
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: User not logged in')),
+      );
+      return;
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error deleting course: $e')),
-    );
-  }
-}
 
+    try {
+      // Get the courseId for the course to delete
+      final courseId = courses[index]['courseId'];
+
+      if (courseId != null) {
+        // Step 1: Find all events linked to the course
+        final eventsQuery = await FirebaseFirestore.instance
+            .collection('events')
+            .where('courseId', isEqualTo: courseId)
+            .get();
+
+        // Step 2: Delete all events linked to the course
+        for (var eventDoc in eventsQuery.docs) {
+          await eventDoc.reference.delete();
+        }
+
+        // Step 3: Delete the course itself
+        await FirebaseFirestore.instance
+            .collection('courses')
+            .doc(courseId)
+            .delete();
+
+        // Remove the course from the local list
+        setState(() {
+          courses.removeAt(index);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting course: $e')),
+      );
+    }
+  }
 
   void _showAddCourseDialog() {
     TextEditingController courseNameController = TextEditingController();
@@ -338,12 +335,27 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                   final userId = currentUser?.uid;
                   if (userId != null) {
                     try {
+                      // Check if a course with the same name exists (excluding the current one)
                       final querySnapshot = await FirebaseFirestore.instance
                           .collection('courses')
                           .where('userId', isEqualTo: userId)
+                          .where('courseName', isEqualTo: updatedCourseName)
                           .get();
 
-                      final docId = querySnapshot.docs[index].id;
+                      // Check if duplicate exists and is not the current course
+                      bool isDuplicate = querySnapshot.docs.any(
+                        (doc) => doc.id != courses[index]['courseId'],
+                      );
+
+                      if (isDuplicate) {
+                        // Show error pop-up if duplicate found
+                        _showErrorDialog('Duplicate Course',
+                            'A course with this name already exists. Please use a different name.');
+                        return;
+                      }
+
+                      // Proceed with updating the course
+                      final docId = courses[index]['courseId'];
 
                       await FirebaseFirestore.instance
                           .collection('courses')
