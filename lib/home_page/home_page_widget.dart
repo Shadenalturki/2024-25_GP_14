@@ -69,56 +69,80 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       );
     }
   }
+   /// Save summary to Firebase
+Future<void> _saveSummaryToFirebase(String courseId, String summary) async {
+  print("Saving summary for courseId: $courseId"); // Debugging courseId
+  try {
+    await FirebaseFirestore.instance
+        .collection('courses') // Main collection
+        .doc(courseId) // Specific course document
+        .collection('summaries') // Sub-collection for summaries
+        .add({
+      'summary': summary,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    print("Summary saved successfully!");
+  } catch (e) {
+    print("Error saving summary: $e");
+  }
+}
+
+
 
   /// Save a course to the Firestore database with a unique courseId
-  Future<void> _saveCourseToDatabase(
-      String courseName, String courseDescription) async {
-    final userId = currentUser?.uid;
+Future<void> _saveCourseToDatabase(
+    String courseName, String courseDescription) async {
+  final userId = currentUser?.uid;
 
-    if (userId == null) {
-      _showErrorDialog('Error', 'User not logged in.');
+  if (userId == null) {
+    _showErrorDialog('Error', 'User not logged in.');
+    return;
+  }
+
+  try {
+    // Check if a course with the same name already exists
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('courses')
+        .where('userId', isEqualTo: userId)
+        .where('courseName', isEqualTo: courseName)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      // Show error pop-up if a duplicate course is found
+      _showErrorDialog(
+          'Duplicate Course', 'A course with this name already exists.');
       return;
     }
 
-    try {
-      // Check if a course with the same name already exists
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('courses')
-          .where('userId', isEqualTo: userId)
-          .where('courseName', isEqualTo: courseName)
-          .get();
+    // Create a new document reference to get a unique courseId
+    final newDocRef = FirebaseFirestore.instance.collection('courses').doc();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        // Show error pop-up if a duplicate course is found
-        _showErrorDialog(
-            'Duplicate Course', 'A course with this name already exists.');
-        return;
-      }
+    // If no duplicates, proceed to save the course
+    final newCourse = {
+      'courseId': newDocRef.id, // Unique courseId
+      'courseName': courseName,
+      'courseDescription': courseDescription,
+      'userId': userId,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
 
-      // Create a new document reference to get a unique courseId
-      final newDocRef = FirebaseFirestore.instance.collection('courses').doc();
+    await newDocRef.set(newCourse);
 
-      // If no duplicates, proceed to save the course
-      final newCourse = {
-        'courseId': newDocRef.id, // Unique courseId
+    // Add the newly created course to the local list with all fields
+    setState(() {
+      courses.insert(0, {
+        'courseId': newDocRef.id, // Include courseId
         'courseName': courseName,
         'courseDescription': courseDescription,
-        'userId': userId,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
-
-      await newDocRef.set(newCourse);
-
-      setState(() {
-        courses.insert(0, {
-          'courseName': courseName,
-          'courseDescription': courseDescription,
-        });
       });
-    } catch (e) {
-      _showErrorDialog('Error', 'Error saving course: $e');
-    }
+    });
+
+    print("Course added: $newCourse"); // Debugging
+  } catch (e) {
+    _showErrorDialog('Error', 'Error saving course: $e');
   }
+}
+
 
   void _showErrorDialog(String title, String message) {
     showDialog(
@@ -443,7 +467,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     return alignedLines.join('\n');
   }
 
-  Future<void> _uploadFile() async {
+  Future<void> _uploadFile(String courseId) async {
+      print("Uploading file for courseId: $courseId"); // Debug to check courseId
+
     // File picker and upload process remains the same
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -547,6 +573,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               if (summaryJson.containsKey('summary')) {
                 final summary = summaryJson['summary'];
                 String formattedSummary = formatSummaryText(summary);
+
+                 // Save the summary to Firebase
+              await _saveSummaryToFirebase(courseId, formattedSummary);
 
                 // Navigate to the summary screen with formatted text
                 Navigator.push(
@@ -864,166 +893,170 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: courses.length,
-                itemBuilder: (context, index) {
-                  final course = courses[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
-                    child: Material(
-                      elevation: 5.0,
-                      borderRadius: BorderRadius.circular(20.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20.0),
-                          border: Border.all(
-                            color: const Color(0xFFC5CAC6),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(13.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      course['courseName']!,
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            fontFamily: 'Outfit',
-                                            color: const Color(0xFF14181B),
-                                            fontSize: 24.0,
-                                          ),
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Color(0xFF104036)),
-                                        onPressed: () {
-                                          _showEditCourseDialog(index);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete,
-                                            color: Color(0xFF104036)),
-                                        onPressed: () async {
-                                          final confirmed =
-                                              await showDialog<bool>(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title:
-                                                    const Text('Delete Course'),
-                                                content: const Text(
-                                                    'Are you sure you want to delete this course?'),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(context)
-                                                            .pop(false),
-                                                    child: const Text('Cancel'),
-                                                    style: TextButton.styleFrom(
-                                                      foregroundColor:
-                                                          Colors.black,
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(context)
-                                                            .pop(true),
-                                                    child: const Text('Delete'),
-                                                    style: TextButton.styleFrom(
-                                                      foregroundColor:
-                                                          Colors.black,
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-
-                                          if (confirmed == true) {
-                                            await _deleteCourseFromDatabase(
-                                                index);
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              if (course['courseDescription']!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 0.0, bottom: 10.0),
-                                  child: Text(
-                                    course['courseDescription']!,
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Outfit',
-                                          color: const Color(0xFF8F9291),
-                                          fontSize: 16.0,
-                                        ),
-                                  ),
-                                ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  FFButtonWidget(
-                                    onPressed: _uploadFile,
-                                    text: 'Upload',
-                                    icon: const Icon(Icons.upload_file),
-                                    options: FFButtonOptions(
-                                      height: 40.0,
-                                      color: const Color(0xFF104036),
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'Inter Tight',
-                                            color: Colors.white,
-                                          ),
-                                      borderRadius: BorderRadius.circular(25.0),
-                                    ),
-                                  ),
-                                  FFButtonWidget(
-                                    onPressed: () async {
-                                      context.pushNamed('history');
-                                    },
-                                    text: 'History',
-                                    icon: const Icon(Icons.history),
-                                    options: FFButtonOptions(
-                                      height: 40.0,
-                                      color: const Color(0xFF104036),
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'Inter Tight',
-                                            color: Colors.white,
-                                          ),
-                                      borderRadius: BorderRadius.circular(25.0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
+  child: ListView.builder(
+    itemCount: courses.length,
+    itemBuilder: (context, index) {
+      final course = courses[index];
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Material(
+          elevation: 5.0,
+          borderRadius: BorderRadius.circular(20.0),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              border: Border.all(
+                color: const Color(0xFFC5CAC6),
               ),
             ),
+            child: Padding(
+              padding: const EdgeInsets.all(13.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          course['courseName']!,
+                          style: FlutterFlowTheme.of(context)
+                              .headlineSmall
+                              .override(
+                                fontFamily: 'Outfit',
+                                color: const Color(0xFF14181B),
+                                fontSize: 24.0,
+                              ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit,
+                                color: Color(0xFF104036)),
+                            onPressed: () {
+                              _showEditCourseDialog(index);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete,
+                                color: Color(0xFF104036)),
+                            onPressed: () async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Delete Course'),
+                                    content: const Text(
+                                        'Are you sure you want to delete this course?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                        child: const Text('Cancel'),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.black,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        child: const Text('Delete'),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+
+                              if (confirmed == true) {
+                                await _deleteCourseFromDatabase(index);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (course['courseDescription']!.isNotEmpty)
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(top: 0.0, bottom: 10.0),
+                      child: Text(
+                        course['courseDescription']!,
+                        style: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                              fontFamily: 'Outfit',
+                              color: const Color(0xFF8F9291),
+                              fontSize: 16.0,
+                            ),
+                      ),
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      FFButtonWidget(
+                        onPressed: () {
+                          final courseId = course['courseId'];
+                              print("courseId: $courseId"); // Debug to check if it is null or empty
+
+                          if (courseId != null) {
+                            _uploadFile(courseId);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Error: Course ID not found'),
+                              ),
+                            );
+                          }
+                        },
+                        text: 'Upload',
+                        icon: const Icon(Icons.upload_file),
+                        options: FFButtonOptions(
+                          height: 40.0,
+                          color: const Color(0xFF104036),
+                          textStyle: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .override(
+                                fontFamily: 'Inter Tight',
+                                color: Colors.white,
+                              ),
+                          borderRadius: BorderRadius.circular(25.0),
+                        ),
+                      ),
+                      FFButtonWidget(
+                        onPressed: () async {
+                          context.pushNamed('history');
+                        },
+                        text: 'History',
+                        icon: const Icon(Icons.history),
+                        options: FFButtonOptions(
+                          height: 40.0,
+                          color: const Color(0xFF104036),
+                          textStyle: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .override(
+                                fontFamily: 'Inter Tight',
+                                color: Colors.white,
+                              ),
+                          borderRadius: BorderRadius.circular(25.0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  ),
+),
+
           ],
         ),
       ),
