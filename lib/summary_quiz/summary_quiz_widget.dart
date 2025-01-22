@@ -20,7 +20,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   late SummaryQuizModel _model;
   String? translatedSummary; // Add this local variable
   bool showTranslated = false; // Toggle to track which text to show
-
+  String? summary;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -28,6 +28,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     super.initState();
     _model = createModel(context, () => SummaryQuizModel());
     translatedSummary = widget.summary; // Initialize with the original summary
+    summary = widget.summary;
   }
 
   @override
@@ -38,41 +39,58 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   }
 
   Future<void> _translateSummary() async {
-    const apiUrl =
-        'https://summarize.ngrok-free.app/translate'; // Replace with your actual ngrok URL
+      print("Translation button pressed");  // This should show up in the console when the button is clicked
 
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"text": widget.summary}),
-      );
-
-      // Log the response for debugging
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-
-        if (responseData.containsKey('translated_summary')) {
-          final translatedText = responseData['translated_summary'];
-          setState(() {
-            translatedSummary = translatedText; // Update the state
-          });
-        } else {
-          throw Exception('Response does not contain translated_summary');
-        }
-      } else {
-        throw Exception('Failed to translate summary');
-      }
-    } catch (e) {
-      print('Error during translation: $e');
-      setState(() {
-        translatedSummary = "Error in translation!"; // Handle error gracefully
-      });
-    }
+  // Toggle the view between original and translated text
+  if (showTranslated) {
+        print("Toggling to show original text");
+    setState(() {
+      showTranslated = false;  // Show original text
+    });
+    return;
   }
+
+  // If translatedSummary is already set and just needs to be shown
+  if (translatedSummary != null && translatedSummary != widget.summary) {
+        print("Toggling to show translated text");
+    setState(() {
+      showTranslated = true;  // Show translated text
+    });
+    return;
+  }
+
+  // Fetch translation only if it's not already loaded
+  const apiUrl = 'https://summarize.ngrok-free.app/translate';
+  try {
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"text": widget.summary}),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      if (responseData.containsKey('translated_summary')) {
+        setState(() {
+          translatedSummary = responseData['translated_summary'];
+          showTranslated = true;  // Toggle to show translated text
+        });
+      } else {
+        throw Exception('Response does not contain translated_summary');
+      }
+    } else {
+      throw Exception('Failed to translate summary');
+    }
+  } catch (e) {
+    print('Error during translation: $e');
+    setState(() {
+      translatedSummary = "Error in translation!";
+      showTranslated = true;
+    });
+  }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -177,6 +195,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                         ),
                                   ),
                                 ),
+                                
                                 Positioned(
                                   top: 80, // Adjust positioning
                                   left: 0,
@@ -201,11 +220,11 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                           1.0, 16.0, 1.0), // Inner padding
                                       child: SingleChildScrollView(
                                         child: Text(
-                                          translatedSummary ??
+                                          showTranslated ? translatedSummary ?? "Translation error" : widget.summary,
+                                          /*translatedSummary ??
                                               widget.summary ??
-                                              "No summary available", // Use translated summary or fallback to the original
-                                          textAlign: TextAlign
-                                              .start, // Align text to the start
+                                              "No summary available",*/ // Use translated summary or fallback to the original
+                                          textAlign: TextAlign.start, // Align text to the start
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -246,8 +265,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                   alignment:
                                       const AlignmentDirectional(0.88, -0.76),
                                   child: InkWell(
-                                    onTap:
-                                        _translateSummary, // Call the translation function
+                                    onTap:_translateSummary, // Call the translation function
                                     child: ClipRRect(
                                       borderRadius: const BorderRadius.only(
                                         bottomLeft: Radius.circular(0.0),
