@@ -4,6 +4,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'summary_quiz_model.dart';
 export 'summary_quiz_model.dart';
+import 'package:http/http.dart' as http; // Add this line for HTTP requests
+import 'dart:convert'; // Add this line to decode JSON responses
 
 class SummaryQuizWidget extends StatefulWidget {
   final String summary;
@@ -16,6 +18,8 @@ class SummaryQuizWidget extends StatefulWidget {
 
 class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   late SummaryQuizModel _model;
+  String? translatedSummary; // Add this local variable
+  bool showTranslated = false; // Toggle to track which text to show
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -23,6 +27,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => SummaryQuizModel());
+    translatedSummary = widget.summary; // Initialize with the original summary
   }
 
   @override
@@ -30,6 +35,43 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  Future<void> _translateSummary() async {
+    const apiUrl =
+        'https://summarize.ngrok-free.app/translate'; // Replace with your actual ngrok URL
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"text": widget.summary}),
+      );
+
+      // Log the response for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.containsKey('translated_summary')) {
+          final translatedText = responseData['translated_summary'];
+          setState(() {
+            translatedSummary = translatedText; // Update the state
+          });
+        } else {
+          throw Exception('Response does not contain translated_summary');
+        }
+      } else {
+        throw Exception('Failed to translate summary');
+      }
+    } catch (e) {
+      print('Error during translation: $e');
+      setState(() {
+        translatedSummary = "Error in translation!"; // Handle error gracefully
+      });
+    }
   }
 
   @override
@@ -120,53 +162,64 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                             ),
                             child: Stack(
                               children: [
-                                 Align(
-      alignment: AlignmentDirectional(-0.9, -0.85),
-      child: Text(
-        'Summary',
-        style: FlutterFlowTheme.of(context).bodyMedium.override(
-              fontFamily: 'DM Sans',
-              color: Color(0xFF202325),
-              fontSize: 18,
-              letterSpacing: 0.0,
-              fontWeight: FontWeight.bold,
-            ),
-      ),
-    ),
-                               Positioned(
-      top: 80, // Increase the top value to move the container down
-      left: 0,
-      right: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0), // Add padding around the text
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFE1EEEB), // Light green background
-            borderRadius: BorderRadius.circular(12.0), // Rounded corners
-          ),
-          constraints: const BoxConstraints(
-            maxWidth: 600.0, // Constrain the box width
-            minHeight: 100.0, // Minimum height
-            maxHeight: 290.0, // Maximum height
-          ),
-          padding: const EdgeInsets.fromLTRB(16.0, 1.0, 16.0, 1.0), // Inner padding
-          
-          child: SingleChildScrollView(
-            child: Text(
-              widget.summary ?? "No summary available", // Null check to avoid runtime errors
-              textAlign: TextAlign.start, // Align text to the start
-              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                fontFamily: 'Inter',
-                color: Colors.black,
-                fontSize: 15.0,
-                letterSpacing: 0.0,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
+                                Align(
+                                  alignment: AlignmentDirectional(-0.9, -0.85),
+                                  child: Text(
+                                    'Summary',
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'DM Sans',
+                                          color: Color(0xFF202325),
+                                          fontSize: 18,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 80, // Adjust positioning
+                                  left: 0,
+                                  right: 0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(
+                                        8.0), // Add padding around the text
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                            0xFFE1EEEB), // Light green background
+                                        borderRadius: BorderRadius.circular(
+                                            12.0), // Rounded corners
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        maxWidth:
+                                            600.0, // Constrain the box width
+                                        minHeight: 100.0, // Minimum height
+                                        maxHeight: 290.0, // Maximum height
+                                      ),
+                                      padding: const EdgeInsets.fromLTRB(16.0,
+                                          1.0, 16.0, 1.0), // Inner padding
+                                      child: SingleChildScrollView(
+                                        child: Text(
+                                          translatedSummary ??
+                                              widget.summary ??
+                                              "No summary available", // Use translated summary or fallback to the original
+                                          textAlign: TextAlign
+                                              .start, // Align text to the start
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                fontFamily: 'Inter',
+                                                color: Colors.black,
+                                                fontSize: 15.0,
+                                                letterSpacing: 0.0,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 Align(
                                   alignment:
                                       const AlignmentDirectional(0.91, -0.79),
@@ -192,22 +245,25 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                 Align(
                                   alignment:
                                       const AlignmentDirectional(0.88, -0.76),
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(0.0),
-                                      bottomRight: Radius.circular(0.0),
-                                      topLeft: Radius.circular(0.0),
-                                      topRight: Radius.circular(0.0),
-                                    ),
-                                    child: Image.asset(
-                                      'assets/images/arabic.png',
-                                      width: 35.0,
-                                      height: 35.0,
-                                      fit: BoxFit.cover,
+                                  child: InkWell(
+                                    onTap:
+                                        _translateSummary, // Call the translation function
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(0.0),
+                                        bottomRight: Radius.circular(0.0),
+                                        topLeft: Radius.circular(0.0),
+                                        topRight: Radius.circular(0.0),
+                                      ),
+                                      child: Image.asset(
+                                        'assets/images/arabic.png',
+                                        width: 35.0,
+                                        height: 35.0,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
                                 ),
-                                
                               ],
                             ),
                           ),
