@@ -87,6 +87,23 @@ Future<void> _saveSummaryToFirebase(String courseId, String summary) async {
   }
 }
 
+Future<void> _saveExtractedMaterialToFirebase(String courseId, String extractedText) async {
+  try {
+    // Save the extracted material in an "extractedMaterials" sub-collection
+    await FirebaseFirestore.instance
+        .collection('courses') // Main collection for courses
+        .doc(courseId) // Document for the specific course
+        .collection('extractedMaterials') // Sub-collection for extracted materials
+        .add({
+      'extractedText': extractedText,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    print("Extracted material saved successfully!");
+  } catch (e) {
+    print("Error saving extracted material: $e");
+  }
+}
 
 
   /// Save a course to the Firestore database with a unique courseId
@@ -143,7 +160,6 @@ Future<void> _saveCourseToDatabase(
   }
 }
 
-
   void _showErrorDialog(String title, String message) {
     showDialog(
       context: context,
@@ -186,49 +202,70 @@ Future<void> _saveCourseToDatabase(
     );
   }
 
-  Future<void> _deleteCourseFromDatabase(int index) async {
-    final userId = currentUser?.uid;
+Future<void> _deleteCourseFromDatabase(int index) async {
+  final userId = currentUser?.uid;
 
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: User not logged in')),
-      );
-      return;
-    }
-
-    try {
-      // Get the courseId for the course to delete
-      final courseId = courses[index]['courseId'];
-
-      if (courseId != null) {
-        // Step 1: Find all events linked to the course
-        final eventsQuery = await FirebaseFirestore.instance
-            .collection('events')
-            .where('courseId', isEqualTo: courseId)
-            .get();
-
-        // Step 2: Delete all events linked to the course
-        for (var eventDoc in eventsQuery.docs) {
-          await eventDoc.reference.delete();
-        }
-
-        // Step 3: Delete the course itself
-        await FirebaseFirestore.instance
-            .collection('courses')
-            .doc(courseId)
-            .delete();
-
-        // Remove the course from the local list
-        setState(() {
-          courses.removeAt(index);
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting course: $e')),
-      );
-    }
+  if (userId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error: User not logged in')),
+    );
+    return;
   }
+
+  try {
+    // Get the courseId for the course to delete
+    final courseId = courses[index]['courseId'];
+
+    if (courseId != null) {
+      // Step 1: Delete all summaries in the 'summaries' sub-collection
+      final summariesQuery = await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(courseId)
+          .collection('summaries')
+          .get();
+
+      for (var summaryDoc in summariesQuery.docs) {
+        await summaryDoc.reference.delete();
+      }
+
+      // Step 2: Delete all extracted materials in the 'extractedMaterials' sub-collection
+      final extractedMaterialsQuery = await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(courseId)
+          .collection('extractedMaterials')
+          .get();
+
+      for (var materialDoc in extractedMaterialsQuery.docs) {
+        await materialDoc.reference.delete();
+      }
+
+      // Step 3: Delete all events linked to this course in the 'events' collection
+      final eventsQuery = await FirebaseFirestore.instance
+          .collection('events')
+          .where('courseId', isEqualTo: courseId)
+          .get();
+
+      for (var eventDoc in eventsQuery.docs) {
+        await eventDoc.reference.delete();
+      }
+
+      // Step 4: Delete the course document itself
+      await FirebaseFirestore.instance.collection('courses').doc(courseId).delete();
+
+      // Remove the course from the local list
+      setState(() {
+        courses.removeAt(index);
+      });
+
+     
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error deleting course: $e')),
+    );
+  }
+}
+
 
   void _showAddCourseDialog() {
     TextEditingController courseNameController = TextEditingController();
@@ -516,124 +553,126 @@ Future<void> _saveCourseToDatabase(
           final jsonResponse = jsonDecode(responseBody);
 
           if (jsonResponse.containsKey('extracted_text')) {
-            final extractedText = jsonResponse['extracted_text'];
+  final extractedText = jsonResponse['extracted_text'];
 
-            // Show a success pop-up for file upload
-            await showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text("File Uploaded Successfully ✔️"),
-                  content: const Text("The file has been uploaded."),
-                  actions: [
-                    TextButton(
-                      child: const Text("OK"),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
+  // Save the extracted text to Firestore
+  await _saveExtractedMaterialToFirebase(courseId, extractedText);
 
-            // Show a loading pop-up for summary generation
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (BuildContext context) {
-                return const AlertDialog(
-                  content: Row(
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(width: 10),
-                      Text("Generating summary..."),
-                    ],
-                  ),
-                );
-              },
-            );
+  // Show a success pop-up for file upload
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("File Uploaded Successfully ✔️"),
+        content: const Text("The file has been uploaded."),
+        actions: [
+          TextButton(
+            child: const Text("OK"),
+            style: TextButton.styleFrom(
+              foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 
-            // Call the summarize endpoint
-            final summarizeResponse = await http.post(
-              summarizeUrl,
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({'text': extractedText}),
-            );
+  // Show a loading pop-up for summary generation
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 10),
+            Text("Generating summary..."),
+          ],
+        ),
+      );
+    },
+  );
 
-            // Dismiss the summary generation dialog
-            Navigator.pop(context);
+  // Call the summarize endpoint
+  final summarizeResponse = await http.post(
+    summarizeUrl,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'text': extractedText}),
+  );
 
-            if (summarizeResponse.statusCode == 200) {
-              final summaryJson = jsonDecode(summarizeResponse.body);
+  // Dismiss the summary generation dialog
+  Navigator.pop(context);
 
-              if (summaryJson.containsKey('summary')) {
-                final summary = summaryJson['summary'];
-                String formattedSummary = formatSummaryText(summary);
+  if (summarizeResponse.statusCode == 200) {
+    final summaryJson = jsonDecode(summarizeResponse.body);
 
-                 // Save the summary to Firebase
-              await _saveSummaryToFirebase(courseId, formattedSummary);
+    if (summaryJson.containsKey('summary')) {
+      final summary = summaryJson['summary'];
+      String formattedSummary = formatSummaryText(summary);
 
-                // Navigate to the summary screen with formatted text
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        SummaryQuizWidget(summary: formattedSummary),
-                  ),
-                );
-              } else {
-                // Show error pop-up if summary not found
-                await showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text("Error"),
-                      content: const Text("No summary found in response."),
-                      actions: [
-                        TextButton(
-                          child: const Text("OK"),
-                          style: TextButton.styleFrom(
-                            foregroundColor:
-                                Color(0xFF4A4A4A), // Dark grey text
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                );
-              }
-            } else {
-              // Show error pop-up if summarization fails
-              await showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text("Error"),
-                    content: Text(
-                        "Failed to summarize text. Status code: ${summarizeResponse.statusCode}"),
-                    actions: [
-                      TextButton(
-                        child: const Text("OK"),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
+      // Save the summary to Firebase
+      await _saveSummaryToFirebase(courseId, formattedSummary);
+
+      // Navigate to the summary screen with formatted text
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SummaryQuizWidget(summary: formattedSummary),
+        ),
+      );
+    } else {
+      // Show error pop-up if summary not found
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Error"),
+            content: const Text("No summary found in response."),
+            actions: [
+              TextButton(
+                child: const Text("OK"),
+                style: TextButton.styleFrom(
+                  foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
                 },
-              );
-            }
-          } else {
+              ),
+            ],
+          );
+        },
+      );
+    }
+  } else {
+    // Show error pop-up if summarization fails
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Error"),
+          content: Text(
+              "Failed to summarize text. Status code: ${summarizeResponse.statusCode}"),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+ else {
             // Show error pop-up if extracted text not found
             await showDialog(
               context: context,
@@ -1063,3 +1102,5 @@ Future<void> _saveCourseToDatabase(
     );
   }
 }
+
+
