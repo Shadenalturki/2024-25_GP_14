@@ -228,186 +228,180 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     );
   }
 
-void _showEditEventDialog(Map<String, dynamic> event) async {
-  eventTitleController.text = event['eventName'];
-  eventDescriptionController.text = event['eventDetails'] ?? '';
+  void _showEditEventDialog(Map<String, dynamic> event) async {
+    eventTitleController.text = event['eventName'];
+    eventDescriptionController.text = event['eventDetails'] ?? '';
 
-  // Ensure eventDate is treated as DateTime
-  final eventDateTime = event['eventDate'] is Timestamp
-      ? event['eventDate'].toDate()
-      : event['eventDate'] as DateTime;
+    // Ensure eventDate is treated as DateTime
+    final eventDateTime = event['eventDate'] is Timestamp
+        ? event['eventDate'].toDate()
+        : event['eventDate'] as DateTime;
 
-  TimeOfDay? selectedTime = TimeOfDay(
-    hour: eventDateTime.hour,
-    minute: eventDateTime.minute,
-  );
+    TimeOfDay? selectedTime = TimeOfDay(
+      hour: eventDateTime.hour,
+      minute: eventDateTime.minute,
+    );
 
-  List<Map<String, dynamic>> courses = [];
-  String? selectedCourseId = event['courseId']; // Capture the linked courseId
+    List<Map<String, dynamic>> courses = [];
+    String? selectedCourseId = event['courseId']; // Capture the linked courseId
 
-  // Fetch the list of courses
-  final user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    final coursesQuery = await FirebaseFirestore.instance
-        .collection('courses')
-        .where('userId', isEqualTo: user.uid)
-        .get();
+    // Fetch the list of courses
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final coursesQuery = await FirebaseFirestore.instance
+          .collection('courses')
+          .where('userId', isEqualTo: user.uid)
+          .get();
 
-    courses = coursesQuery.docs
-        .map((doc) => {
-              'courseId': doc.id,
-              'courseName': doc['courseName'],
-            })
-        .toList();
-  }
+      courses = coursesQuery.docs
+          .map((doc) => {
+                'courseId': doc.id,
+                'courseName': doc['courseName'],
+              })
+          .toList();
+    }
 
-  // Find the name of the currently linked course
-  String? initialCourseName = selectedCourseId != null
-      ? courses.firstWhere(
-          (course) => course['courseId'] == selectedCourseId,
-          orElse: () => {'courseName': 'No course linked'},
-        )['courseName']
-      : 'No course linked';
+    // Use $linkedCourse to find the initial course name
+    String? initialCourseName = event['courseName'] ?? 'No course linked';
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (BuildContext context, StateSetter setDialogState) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-            title: const Text('Edit Event'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: eventTitleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Event Title',
-                  ),
-                ),
-                TextField(
-                  controller: eventDescriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Event Description (optional)',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'Change Linked Course (optional)',
-                  ),
-                  items: courses
-                      .map((course) => DropdownMenuItem<String>(
-                            value: course['courseId'],
-                            child: Text(course['courseName']),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setDialogState(() {
-                      selectedCourseId = value;
-                    });
-                  },
-                  value: selectedCourseId,
-                  hint: initialCourseName != null
-                      ? Text('Selected: $initialCourseName')
-                      : const Text('No course linked'),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF104036),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              title: const Text('Edit Event'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: eventTitleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Event Title',
                     ),
                   ),
+                  TextField(
+                    controller: eventDescriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Event Description (optional)',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Change Linked Course (optional)',
+                    ),
+                    items: courses
+                        .map((course) => DropdownMenuItem<String>(
+                              value: course['courseId'],
+                              child: Text(course['courseName']),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        selectedCourseId = value;
+                      });
+                    },
+                    value: selectedCourseId, // Set the initial value correctly
+                    hint: Text('Selected: $initialCourseName'),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF104036),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () async {
+                      TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: selectedTime ?? TimeOfDay.now(),
+                      );
+
+                      if (pickedTime != null) {
+                        setDialogState(() {
+                          selectedTime = pickedTime;
+                        });
+                      }
+                    },
+                    child: Text(
+                      selectedTime != null
+                          ? 'Time: ${selectedTime!.format(context)}'
+                          : 'Select Time',
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
                   onPressed: () async {
-                    TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: selectedTime ?? TimeOfDay.now(),
+                    final newTitle = eventTitleController.text.trim();
+                    final newDescription =
+                        eventDescriptionController.text.trim();
+
+                    if (newTitle.isEmpty || selectedTime == null) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Invalid Input'),
+                            content: const Text('Event title cannot be empty.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      return;
+                    }
+
+                    // Combine date and time for the updated event
+                    final updatedDateTime = DateTime(
+                      eventDateTime.year,
+                      eventDateTime.month,
+                      eventDateTime.day,
+                      selectedTime!.hour,
+                      selectedTime!.minute,
                     );
 
-                    if (pickedTime != null) {
-                      setDialogState(() {
-                        selectedTime = pickedTime;
-                      });
-                    }
+                    // Update the event in Firestore
+                    await FirebaseFirestore.instance
+                        .collection('events')
+                        .doc(event['id'])
+                        .update({
+                      'eventName': newTitle,
+                      'eventDetails': newDescription,
+                      'eventDate': Timestamp.fromDate(updatedDateTime),
+                      'courseId': selectedCourseId, // Update courseId
+                    });
+
+                    // Refresh events and update UI
+                    await _model.fetchEvents();
+                    setState(() {}); // Ensure immediate UI refresh
+
+                    Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: Text(
-                    selectedTime != null
-                        ? 'Time: ${selectedTime!.format(context)}'
-                        : 'Select Time',
-                  ),
+                  child: const Text('Save'),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  final newTitle = eventTitleController.text.trim();
-                  final newDescription = eventDescriptionController.text.trim();
-
-                  if (newTitle.isEmpty || selectedTime == null) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Invalid Input'),
-                          content: const Text('Event title cannot be empty.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                    return;
-                  }
-
-                  // Combine date and time for the updated event
-                  final updatedDateTime = DateTime(
-                    eventDateTime.year,
-                    eventDateTime.month,
-                    eventDateTime.day,
-                    selectedTime!.hour,
-                    selectedTime!.minute,
-                  );
-
-                  // Update the event in Firestore
-                  await FirebaseFirestore.instance
-                      .collection('events')
-                      .doc(event['id'])
-                      .update({
-                    'eventName': newTitle,
-                    'eventDetails': newDescription,
-                    'eventDate': Timestamp.fromDate(updatedDateTime),
-                    'courseId': selectedCourseId, // Update courseId
-                  });
-
-                  // Refresh events and update UI
-                  await _model.fetchEvents();
-                  setState(() {}); // Ensure immediate UI refresh
-
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -549,187 +543,239 @@ void _showEditEventDialog(Map<String, dynamic> event) async {
                           ),
                           // Event List
                           Expanded(
-  child: ListView.builder(
-    padding: EdgeInsets.zero,
-    itemCount: model.upcomingEvents.length,
-    itemBuilder: (context, index) {
-      final event = model.upcomingEvents[index];
-      final eventDetails = event['eventDetails'];
-      final linkedCourse = event['courseName']; // Assume courseName is fetched from the database
-      return Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white, // Card background
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: mediumGreen, // Medium green border
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: const Offset(2, 2),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 16, horizontal: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Event Title
-                    Text(
-                      event['eventName'],
-                      style: FlutterFlowTheme.of(context)
-                          .titleMedium
-                          .override(
-                            fontFamily: 'Inter Tight',
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF14181B),
-                          ),
-                    ),
-                    // Course Name (If any)
-                    if (linkedCourse != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'Course: $linkedCourse',
-                          style: FlutterFlowTheme.of(context)
-                              .bodyMedium
-                              .override(
-                                fontFamily: 'Inter',
-                                fontSize: 16.0, // Increased font size
-                                fontWeight: FontWeight.w600, // Semi-bold text
-                                color: const Color(0xFF104036),
-                              ),
-                        ),
-                      ),
-                    // Event Details (If any)
-                    if (eventDetails != null && eventDetails.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                        child: Text(
-                          eventDetails,
-                          style: FlutterFlowTheme.of(context)
-                              .bodySmall
-                              .override(
-                                fontFamily: 'Inter',
-                                color: mediumGreen,
-                              ),
-                        ),
-                      ),
-                    // Time and Date
-                    Row(
-                      children: [
-                        if (event['eventDate'] != null) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0, vertical: 4.0),
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(77, 238, 202, 96),
-                              borderRadius: BorderRadius.circular(8.0),
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: model.upcomingEvents.length,
+                              itemBuilder: (context, index) {
+                                final event = model.upcomingEvents[index];
+                                final eventDetails = event['eventDetails'];
+                                final linkedCourse = event[
+                                    'courseName']; // Assume courseName is fetched from the database
+                                return Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      16, 8, 16, 8),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white, // Card background
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color:
+                                            mediumGreen, // Medium green border
+                                        width: 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 8,
+                                          offset: const Offset(2, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 16, horizontal: 12),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              // Event Title
+                                              Text(
+                                                event['eventName'],
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .titleMedium
+                                                        .override(
+                                                          fontFamily:
+                                                              'Inter Tight',
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: const Color(
+                                                              0xFF14181B),
+                                                        ),
+                                              ),
+                                              // Course Name (If any)
+                                              if (linkedCourse != null)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8.0),
+                                                  child: Text(
+                                                    'Course: $linkedCourse',
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily: 'Inter',
+                                                          fontSize:
+                                                              16.0, // Increased font size
+                                                          fontWeight: FontWeight
+                                                              .w600, // Semi-bold text
+                                                          color: const Color(
+                                                              0xFF104036),
+                                                        ),
+                                                  ),
+                                                ),
+                                              // Event Details (If any)
+                                              if (eventDetails != null &&
+                                                  eventDetails.isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8.0,
+                                                          bottom: 8.0),
+                                                  child: Text(
+                                                    eventDetails,
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .bodySmall
+                                                        .override(
+                                                          fontFamily: 'Inter',
+                                                          color: mediumGreen,
+                                                        ),
+                                                  ),
+                                                ),
+                                              // Time and Date
+                                              Row(
+                                                children: [
+                                                  if (event['eventDate'] !=
+                                                      null) ...[
+                                                    Container(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 8.0,
+                                                          vertical: 4.0),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color
+                                                            .fromARGB(
+                                                            77, 238, 202, 96),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      child: Text(
+                                                        DateFormat('h:mm a')
+                                                            .format(
+                                                          CalendarModel
+                                                              .convertToDateTime(
+                                                                  event[
+                                                                      'eventDate']),
+                                                        ),
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Inter',
+                                                                  color: const Color(
+                                                                      0xFFC62828),
+                                                                ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8.0),
+                                                  ],
+                                                  Text(
+                                                    DateFormat(
+                                                            'EEE, MMM d, yyyy')
+                                                        .format(
+                                                      CalendarModel
+                                                          .convertToDateTime(
+                                                              event[
+                                                                  'eventDate']),
+                                                    ),
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .bodySmall
+                                                        .override(
+                                                          fontFamily: 'Inter',
+                                                          color: mediumGreen,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Positioned icons: Edit and Delete
+                                        Positioned(
+                                          right: 16,
+                                          top: 0,
+                                          bottom: 0,
+                                          child: Row(
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(Icons.edit,
+                                                    color: Color(0xFF104036)),
+                                                onPressed: () {
+                                                  _showEditEventDialog(event);
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete,
+                                                    color: Color(0xFF104036)),
+                                                onPressed: () async {
+                                                  final confirmed =
+                                                      await showDialog<bool>(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return AlertDialog(
+                                                        title: const Text(
+                                                            'Delete Event'),
+                                                        content: const Text(
+                                                            'Are you sure you want to delete this event?'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(false),
+                                                            child: const Text(
+                                                                'Cancel'),
+                                                            style: TextButton
+                                                                .styleFrom(
+                                                              foregroundColor:
+                                                                  Colors
+                                                                      .black, // Set text color to black
+                                                            ),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(true),
+                                                            child: const Text(
+                                                                'Delete'),
+                                                            style: TextButton
+                                                                .styleFrom(
+                                                              foregroundColor:
+                                                                  Colors
+                                                                      .black, // Set text color to black
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+
+                                                  if (confirmed == true) {
+                                                    await _model.deleteEvent(
+                                                        event['id']);
+                                                  }
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            child: Text(
-                              DateFormat('h:mm a').format(
-                                CalendarModel.convertToDateTime(
-                                    event['eventDate']),
-                              ),
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    color: const Color(0xFFC62828),
-                                  ),
-                            ),
                           ),
-                          const SizedBox(width: 8.0),
-                        ],
-                        Text(
-                          DateFormat('EEE, MMM d, yyyy').format(
-                            CalendarModel.convertToDateTime(
-                                event['eventDate']),
-                          ),
-                          style: FlutterFlowTheme.of(context)
-                              .bodySmall
-                              .override(
-                                fontFamily: 'Inter',
-                                color: mediumGreen,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Positioned icons: Edit and Delete
-              Positioned(
-                right: 16,
-                top: 0,
-                bottom: 0,
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF104036)),
-                      onPressed: () {
-                        _showEditEventDialog(event);
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Color(0xFF104036)),
-                      onPressed: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Delete Event'),
-                              content: const Text(
-                                  'Are you sure you want to delete this event?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: const Text('Cancel'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor:
-                                        Colors.black, // Set text color to black
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: const Text('Delete'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor:
-                                        Colors.black, // Set text color to black
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                        if (confirmed == true) {
-                          await _model.deleteEvent(event['id']);
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  ),
-),
-
-
                         ],
                       ),
                     ),
