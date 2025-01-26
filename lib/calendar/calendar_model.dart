@@ -128,6 +128,23 @@ Future<void> fetchEvents() async {
     }
   }
 
-  // Getter to retrieve events for display
-  List<Map<String, dynamic>> get upcomingEvents => events;
+  
+
+    // Getter to retrieve "Coming Up" events (events in the future)
+  List<Map<String, dynamic>> get upcomingEvents {
+    final now = DateTime.now();
+    return events.where((event) {
+      final eventDate = event['eventDate'] as DateTime;
+      return eventDate.isAfter(now); // Filter events with future dates
+    }).toList();
+  }
+
+  // Getter to retrieve "Passed" events (events in the past)
+  List<Map<String, dynamic>> get passedEvents {
+    final now = DateTime.now();
+    return events.where((event) {
+      final eventDate = event['eventDate'] as DateTime;
+      return eventDate.isBefore(now); // Filter events with past dates
+    }).toList();
+  }
 }

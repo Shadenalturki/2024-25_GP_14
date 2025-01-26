@@ -228,6 +228,140 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     );
   }
 
+  Widget _buildEventCard(Map<String, dynamic> event, Color mediumGreen) {
+  final eventDetails = event['eventDetails'];
+  final linkedCourse = event['courseName'];
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: mediumGreen,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Event Name
+                Text(
+                  event['eventName'],
+                  style: FlutterFlowTheme.of(context).titleMedium.override(
+                        fontFamily: 'Inter Tight',
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF14181B),
+                      ),
+                ),
+                // Linked Course (if available)
+                if (linkedCourse != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      'Course: $linkedCourse',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'Inter',
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF104036),
+                          ),
+                    ),
+                  ),
+                // Event Details (if available)
+                if (eventDetails != null && eventDetails.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      eventDetails,
+                      style: FlutterFlowTheme.of(context).bodySmall.override(
+                            fontFamily: 'Inter',
+                            color: mediumGreen,
+                          ),
+                    ),
+                  ),
+                // Event Date and Time
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    DateFormat('EEE, MMM d, yyyy h:mm a').format(
+                      CalendarModel.convertToDateTime(event['eventDate']),
+                    ),
+                    style: FlutterFlowTheme.of(context).bodySmall.override(
+                          fontFamily: 'Inter',
+                          color: mediumGreen,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Edit and Delete Options
+          Positioned(
+            right: 16,
+            top: 0,
+            bottom: 0,
+            child: Row(
+              children: [
+                // Edit Icon
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Color(0xFF104036)),
+                  onPressed: () {
+                    _showEditEventDialog(event); // Call your edit function
+                  },
+                ),
+                // Delete Icon
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Color(0xFF104036)),
+                  onPressed: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Delete Event'),
+                          content:
+                              const Text('Are you sure you want to delete this event?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('Delete'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmed == true) {
+                      await _model.deleteEvent(event['id']); // Call your delete function
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
   void _showEditEventDialog(Map<String, dynamic> event) async {
     eventTitleController.text = event['eventName'];
     eventDescriptionController.text = event['eventDetails'] ?? '';
@@ -520,266 +654,61 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     ),
                   ),
                   Expanded(
-                    child: Container(
-                      color:
-                          veryLightGrey, // Unified background for the section
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // "Coming Up" Header
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12.0, horizontal: 16.0),
-                            child: Text(
-                              'Coming Up',
-                              style: FlutterFlowTheme.of(context)
-                                  .titleLarge
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                    color: mediumGreen,
-                                  ),
-                            ),
-                          ),
-                          // Event List
-                          Expanded(
-                            child: ListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount: model.upcomingEvents.length,
-                              itemBuilder: (context, index) {
-                                final event = model.upcomingEvents[index];
-                                final eventDetails = event['eventDetails'];
-                                final linkedCourse = event[
-                                    'courseName']; // Assume courseName is fetched from the database
-                                return Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      16, 8, 16, 8),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white, // Card background
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(
-                                        color:
-                                            mediumGreen, // Medium green border
-                                        width: 1,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
-                                          blurRadius: 8,
-                                          offset: const Offset(2, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 16, horizontal: 12),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              // Event Title
-                                              Text(
-                                                event['eventName'],
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .override(
-                                                          fontFamily:
-                                                              'Inter Tight',
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: const Color(
-                                                              0xFF14181B),
-                                                        ),
-                                              ),
-                                              // Course Name (If any)
-                                              if (linkedCourse != null)
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 8.0),
-                                                  child: Text(
-                                                    'Course: $linkedCourse',
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily: 'Inter',
-                                                          fontSize:
-                                                              16.0, // Increased font size
-                                                          fontWeight: FontWeight
-                                                              .w600, // Semi-bold text
-                                                          color: const Color(
-                                                              0xFF104036),
-                                                        ),
-                                                  ),
-                                                ),
-                                              // Event Details (If any)
-                                              if (eventDetails != null &&
-                                                  eventDetails.isNotEmpty)
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 8.0),
-                                                  child: Text(
-                                                    eventDetails,
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodySmall
-                                                        .override(
-                                                          fontFamily: 'Inter',
-                                                          color: mediumGreen,
-                                                        ),
-                                                  ),
-                                                ),
-                                              // Time and Date
-                                              Row(
-                                                children: [
-                                                  if (event['eventDate'] !=
-                                                      null) ...[
-                                                    Container(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 8.0,
-                                                          vertical: 4.0),
-                                                      decoration: BoxDecoration(
-                                                        color: const Color
-                                                            .fromARGB(
-                                                            77, 238, 202, 96),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      child: Text(
-                                                        DateFormat('h:mm a')
-                                                            .format(
-                                                          CalendarModel
-                                                              .convertToDateTime(
-                                                                  event[
-                                                                      'eventDate']),
-                                                        ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Inter',
-                                                                  color: const Color(
-                                                                      0xFFC62828),
-                                                                ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 8.0),
-                                                  ],
-                                                  Text(
-                                                    DateFormat(
-                                                            'EEE, MMM d, yyyy')
-                                                        .format(
-                                                      CalendarModel
-                                                          .convertToDateTime(
-                                                              event[
-                                                                  'eventDate']),
-                                                    ),
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodySmall
-                                                        .override(
-                                                          fontFamily: 'Inter',
-                                                          color: mediumGreen,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Positioned icons: Edit and Delete
-                                        Positioned(
-                                          right: 16,
-                                          top: 0,
-                                          bottom: 0,
-                                          child: Row(
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(Icons.edit,
-                                                    color: Color(0xFF104036)),
-                                                onPressed: () {
-                                                  _showEditEventDialog(event);
-                                                },
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(Icons.delete,
-                                                    color: Color(0xFF104036)),
-                                                onPressed: () async {
-                                                  final confirmed =
-                                                      await showDialog<bool>(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return AlertDialog(
-                                                        title: const Text(
-                                                            'Delete Event'),
-                                                        content: const Text(
-                                                            'Are you sure you want to delete this event?'),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () =>
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(false),
-                                                            child: const Text(
-                                                                'Cancel'),
-                                                            style: TextButton
-                                                                .styleFrom(
-                                                              foregroundColor:
-                                                                  Colors
-                                                                      .black, // Set text color to black
-                                                            ),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed: () =>
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(true),
-                                                            child: const Text(
-                                                                'Delete'),
-                                                            style: TextButton
-                                                                .styleFrom(
-                                                              foregroundColor:
-                                                                  Colors
-                                                                      .black, // Set text color to black
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
+  child: SingleChildScrollView(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // "Coming Up" Header
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          child: Text(
+            'Coming Up',
+            style: FlutterFlowTheme.of(context).titleLarge.override(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF7B9076), // Medium green
+                ),
+          ),
+        ),
+        // "Coming Up" Events List
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: _model.upcomingEvents.length,
+          itemBuilder: (context, index) {
+            final event = _model.upcomingEvents[index];
+            return _buildEventCard(event, const Color(0xFF7B9076));
+          },
+        ),
+        // "Passed" Header
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          child: Text(
+            'Passed',
+            style: FlutterFlowTheme.of(context).titleLarge.override(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF7B9076), // Medium green
+                ),
+          ),
+        ),
+        // "Passed" Events List
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: _model.passedEvents.length,
+          itemBuilder: (context, index) {
+            final event = _model.passedEvents[index];
+            return _buildEventCard(event, const Color(0xFF7B9076));
+          },
+        ),
+      ],
+    ),
+  ),
+),
 
-                                                  if (confirmed == true) {
-                                                    await _model.deleteEvent(
-                                                        event['id']);
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               );
             },
