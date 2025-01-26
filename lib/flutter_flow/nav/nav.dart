@@ -99,6 +99,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => SummaryQuizWidget(
             summary: params.getParam('summary', ParamType.String) ??
                 'Default Summary', // Pass the summary
+            topicName: params.getParam('topicName', ParamType.String) ?? 'Default Topic',
+
           ),
         ),
         FFRoute(

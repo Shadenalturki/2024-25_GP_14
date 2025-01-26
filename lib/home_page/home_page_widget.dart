@@ -70,7 +70,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     }
   }
    /// Save summary to Firebase
-Future<void> _saveSummaryToFirebase(String courseId, String summary) async {
+Future<void> _saveSummaryToFirebase(String courseId, String summary,String topicName) async {
   print("Saving summary for courseId: $courseId"); // Debugging courseId
   try {
     await FirebaseFirestore.instance
@@ -79,6 +79,7 @@ Future<void> _saveSummaryToFirebase(String courseId, String summary) async {
         .collection('summaries') // Sub-collection for summaries
         .add({
       'summary': summary,
+      'topicName': topicName,
       'createdAt': FieldValue.serverTimestamp(),
     });
     print("Summary saved successfully!");
@@ -504,8 +505,105 @@ Future<void> _deleteCourseFromDatabase(int index) async {
     return alignedLines.join('\n');
   }
 
-  Future<void> _uploadFile(String courseId) async {
-      print("Uploading file for courseId: $courseId"); // Debug to check courseId
+Future<void> _promptForTopicAndUpload(String courseId) async {
+  TextEditingController topicController = TextEditingController();
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Enter Topic Name'),
+        content: TextField(
+          controller: topicController,
+          decoration: InputDecoration(hintText: 'Topic name'),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF4A4A4A), // Set color for "OK" button in error dialog
+            ),
+          ),
+          TextButton(
+            child: Text('Upload'),
+            style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF4A4A4A), // Set color for "OK" button in error dialog
+            ),
+            onPressed: () {
+              String trimmedTopic = topicController.text.trim();
+              if (trimmedTopic.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Error"),
+                      content: Text("Topic name cannot be empty."),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the error dialog
+                          },
+                          child: Text('OK'),
+                          style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF4A4A4A), // Set color for "OK" button in error dialog
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              } else {
+                Navigator.of(context).pop();
+                _checkTopicAndUpload(courseId, trimmedTopic);
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
+  // Query Firestore to see if the topic name already exists for this course
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('courses')
+      .doc(courseId)
+      .collection('summaries')
+      .where('topicName', isEqualTo: topicName)
+      .get();
+
+  if (querySnapshot.docs.isEmpty) {
+    // If topic name doesn't exist, proceed with the upload
+    _uploadFile(courseId, topicName);
+  } else {
+    // If topic name exists, show an error
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text("This topic name already exists for this course. Please choose a different name."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the error dialog
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+
+  Future<void> _uploadFile(String courseId, String topicName) async {
+      print("Uploading file for courseId: $courseId, Topic: $topicName"); // Debug to check courseId
 
     // File picker and upload process remains the same
     final result = await FilePicker.platform.pickFiles(
@@ -615,13 +713,13 @@ Future<void> _deleteCourseFromDatabase(int index) async {
       String formattedSummary = formatSummaryText(summary);
 
       // Save the summary to Firebase
-      await _saveSummaryToFirebase(courseId, formattedSummary);
+      await _saveSummaryToFirebase(courseId, formattedSummary, topicName);
 
       // Navigate to the summary screen with formatted text
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => SummaryQuizWidget(summary: formattedSummary),
+          builder: (context) => SummaryQuizWidget(summary: formattedSummary, topicName: topicName),
         ),
       );
     } else {
@@ -1043,7 +1141,8 @@ Future<void> _deleteCourseFromDatabase(int index) async {
                               print("courseId: $courseId"); // Debug to check if it is null or empty
 
                           if (courseId != null) {
-                            _uploadFile(courseId);
+                            _promptForTopicAndUpload(courseId);
+                            //_uploadFile(courseId);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(

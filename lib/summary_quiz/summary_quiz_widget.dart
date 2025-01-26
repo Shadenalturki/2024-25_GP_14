@@ -9,8 +9,9 @@ import 'dart:convert'; // Add this line to decode JSON responses
 
 class SummaryQuizWidget extends StatefulWidget {
   final String summary;
+  final String topicName; 
 
-  const SummaryQuizWidget({required this.summary, super.key});
+  const SummaryQuizWidget({required this.summary, required this.topicName, super.key});
 
   @override
   State<SummaryQuizWidget> createState() => _SummaryQuizWidgetState();
@@ -94,6 +95,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
 
   @override
   Widget build(BuildContext context) {
+     print("Received topic: ${widget.topicName}"); 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -150,7 +152,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                             Align(
                               alignment: const AlignmentDirectional(-0.9, -0.9),
                               child: Text(
-                                'Topic',
+                                ' ${widget.topicName}',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
