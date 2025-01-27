@@ -72,21 +72,27 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   /// Save summary to Firebase
-  Future<void> _saveSummaryToFirebase(
-      String courseId, String summary, String topicName, List<dynamic> quizData) async {
+  Future<void> _saveSummaryToFirebase(String courseId, String summary,
+      String topicName, List<dynamic> quizData) async {
     print("Saving summary for courseId: $courseId"); // Debugging courseId
     try {
-      await FirebaseFirestore.instance
+      // Generate a unique document ID for the summary
+      final newDocRef = FirebaseFirestore.instance
           .collection('courses') // Main collection
           .doc(courseId) // Specific course document
           .collection('summaries') // Sub-collection for summaries
-          .add({
+          .doc(); // Generate a unique document reference
+
+      final summaryId = newDocRef.id; // Get the unique ID
+
+      await newDocRef.set({
+        'summaryId': summaryId, // Save the generated summaryId
         'summary': summary,
         'topicName': topicName,
-        'quizData' : quizData,
+        'quizData': quizData,
         'createdAt': FieldValue.serverTimestamp(),
       });
-      print("Summary saved successfully!");
+      print("Summary saved successfully with summaryId: $summaryId");
     } catch (e) {
       print("Error saving summary: $e");
     }
@@ -604,9 +610,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 },
                 child: Text('OK'),
                 style: TextButton.styleFrom(
-                              foregroundColor: const Color(
-                                  0xFF4A4A4A), // Set color for "OK" button in error dialog
-                            ),
+                  foregroundColor: const Color(
+                      0xFF4A4A4A), // Set color for "OK" button in error dialog
+                ),
               ),
             ],
           );
@@ -745,7 +751,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => QuizWidget(quizData: quizData, topicName: topicName,),
+                builder: (context) => QuizWidget(
+                  quizData: quizData,
+                  topicName: topicName,
+                ),
               ),
             );
             // Dismiss the summary generation dialog
@@ -757,11 +766,11 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               if (summaryJson.containsKey('summary')) {
                 final summary = summaryJson['summary'];
                 String formattedSummary = formatSummaryText(summary);
-print("Quiz Data Before Saving: $quizData");
+                print("Quiz Data Before Saving: $quizData");
 
                 // Save the summary to Firebase
                 await _saveSummaryToFirebase(
-                    courseId, formattedSummary, topicName,quizData);
+                    courseId, formattedSummary, topicName, quizData);
 
                 // Navigate to the summary screen with formatted text
                 Navigator.push(
