@@ -1,3 +1,7 @@
+import 'package:summ_a_ize/flutter_flow/flutter_flow_radio_button.dart';
+import 'package:summ_a_ize/flutter_flow/flutter_flow_widgets.dart';
+import 'package:summ_a_ize/flutter_flow/form_field_controller.dart';
+
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -9,9 +13,13 @@ import 'dart:convert'; // Add this line to decode JSON responses
 
 class SummaryQuizWidget extends StatefulWidget {
   final String summary;
-  final String topicName; 
-
-  const SummaryQuizWidget({required this.summary, required this.topicName, super.key});
+  final String topicName;
+  final List quizData;
+  const SummaryQuizWidget(
+      {required this.summary,
+      required this.topicName,
+      super.key,
+      required this.quizData});
 
   @override
   State<SummaryQuizWidget> createState() => _SummaryQuizWidgetState();
@@ -22,6 +30,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   String? translatedSummary; // Add this local variable
   bool showTranslated = false; // Toggle to track which text to show
   String? summary;
+  List? quizData;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -30,6 +39,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     _model = createModel(context, () => SummaryQuizModel());
     translatedSummary = widget.summary; // Initialize with the original summary
     summary = widget.summary;
+    quizData = widget.quizData;
   }
 
   @override
@@ -40,62 +50,62 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   }
 
   Future<void> _translateSummary() async {
-      print("Translation button pressed");  // This should show up in the console when the button is clicked
+    print(
+        "Translation button pressed"); // This should show up in the console when the button is clicked
 
-  // Toggle the view between original and translated text
-  if (showTranslated) {
-        print("Toggling to show original text");
-    setState(() {
-      showTranslated = false;  // Show original text
-    });
-    return;
-  }
-
-  // If translatedSummary is already set and just needs to be shown
-  if (translatedSummary != null && translatedSummary != widget.summary) {
-        print("Toggling to show translated text");
-    setState(() {
-      showTranslated = true;  // Show translated text
-    });
-    return;
-  }
-
-  // Fetch translation only if it's not already loaded
-  const apiUrl = 'https://summarize.ngrok-free.app/translate';
-  try {
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"text": widget.summary}),
-    );
-
-    if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body);
-      if (responseData.containsKey('translated_summary')) {
-        setState(() {
-          translatedSummary = responseData['translated_summary'];
-          showTranslated = true;  // Toggle to show translated text
-        });
-      } else {
-        throw Exception('Response does not contain translated_summary');
-      }
-    } else {
-      throw Exception('Failed to translate summary');
+    // Toggle the view between original and translated text
+    if (showTranslated) {
+      print("Toggling to show original text");
+      setState(() {
+        showTranslated = false; // Show original text
+      });
+      return;
     }
-  } catch (e) {
-    print('Error during translation: $e');
-    setState(() {
-      translatedSummary = "Error in translation!";
-      showTranslated = true;
-    });
+
+    // If translatedSummary is already set and just needs to be shown
+    if (translatedSummary != null && translatedSummary != widget.summary) {
+      print("Toggling to show translated text");
+      setState(() {
+        showTranslated = true; // Show translated text
+      });
+      return;
+    }
+
+    // Fetch translation only if it's not already loaded
+    const apiUrl = 'https://summarize.ngrok-free.app/translate';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"text": widget.summary}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData.containsKey('translated_summary')) {
+          setState(() {
+            translatedSummary = responseData['translated_summary'];
+            showTranslated = true; // Toggle to show translated text
+          });
+        } else {
+          throw Exception('Response does not contain translated_summary');
+        }
+      } else {
+        throw Exception('Failed to translate summary');
+      }
+    } catch (e) {
+      print('Error during translation: $e');
+      setState(() {
+        translatedSummary = "Error in translation!";
+        showTranslated = true;
+      });
+    }
   }
-}
 
-
-
+  List<String?> selectedAnswers = [];
   @override
   Widget build(BuildContext context) {
-     print("Received topic: ${widget.topicName}"); 
+    print("Received topic: ${widget.topicName}");
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -152,7 +162,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                             Align(
                               alignment: const AlignmentDirectional(-0.9, -0.9),
                               child: Text(
-                                ' ${widget.topicName}',
+                                '${widget.topicName}',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -197,36 +207,32 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                         ),
                                   ),
                                 ),
-                                
                                 Positioned(
-                                  top: 80, // Adjust positioning
+                                  top: 80,
                                   left: 0,
                                   right: 0,
                                   child: Padding(
-                                    padding: const EdgeInsets.all(
-                                        8.0), // Add padding around the text
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: const Color(
-                                            0xFFE1EEEB), // Light green background
-                                        borderRadius: BorderRadius.circular(
-                                            12.0), // Rounded corners
+                                        color: const Color(0xFFE1EEEB),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
                                       ),
                                       constraints: const BoxConstraints(
-                                        maxWidth:
-                                            600.0, // Constrain the box width
-                                        minHeight: 100.0, // Minimum height
-                                        maxHeight: 290.0, // Maximum height
+                                        maxWidth: 600.0,
+                                        minHeight: 100.0,
+                                        maxHeight: 290.0,
                                       ),
-                                      padding: const EdgeInsets.fromLTRB(16.0,
-                                          1.0, 16.0, 1.0), // Inner padding
+                                      padding: const EdgeInsets.fromLTRB(
+                                          16.0, 1.0, 16.0, 1.0),
                                       child: SingleChildScrollView(
                                         child: Text(
-                                          showTranslated ? translatedSummary ?? "Translation error" : widget.summary,
-                                          /*translatedSummary ??
-                                              widget.summary ??
-                                              "No summary available",*/ // Use translated summary or fallback to the original
-                                          textAlign: TextAlign.start, // Align text to the start
+                                          showTranslated
+                                              ? translatedSummary ??
+                                                  "Translation error"
+                                              : widget.summary,
+                                          textAlign: TextAlign.start,
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -267,7 +273,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                   alignment:
                                       const AlignmentDirectional(0.88, -0.76),
                                   child: InkWell(
-                                    onTap:_translateSummary, // Call the translation function
+                                    onTap: _translateSummary,
                                     child: ClipRRect(
                                       borderRadius: const BorderRadius.only(
                                         bottomLeft: Radius.circular(0.0),
@@ -329,7 +335,12 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.pushNamed('Quiz');
+                                      context.pushNamed(
+                                        'Quiz',
+                                        extra: <String, dynamic>{
+                                          'quizData': quizData,
+                                        },
+                                      );
                                     },
                                     child: Container(
                                       width: 46.0,
@@ -358,14 +369,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                           context.pushNamed(
                                             'Quiz',
                                             extra: <String, dynamic>{
-                                              kTransitionInfoKey:
-                                                  const TransitionInfo(
-                                                hasTransition: true,
-                                                transitionType:
-                                                    PageTransitionType.fade,
-                                                duration:
-                                                    Duration(milliseconds: 0),
-                                              ),
+                                              'quizData': quizData,
                                             },
                                           );
                                         },
@@ -390,10 +394,6 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
               Align(
                 alignment: const AlignmentDirectional(0.85, 0.97),
                 child: InkWell(
-                  splashColor: Colors.transparent,
-                  focusColor: Colors.transparent,
-                  hoverColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
                   onTap: () async {
                     context.pushNamed('chatbot');
                   },
@@ -427,7 +427,6 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'Inter',
                                     color: const Color(0xFF104036),
-                                    letterSpacing: 0.0,
                                   ),
                         ),
                       ],

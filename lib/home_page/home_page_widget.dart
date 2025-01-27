@@ -1,3 +1,4 @@
+import 'package:summ_a_ize/quiz/quiz_widget.dart';
 import 'package:summ_a_ize/summary_quiz/summary_quiz_widget.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -69,97 +70,100 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       );
     }
   }
-   /// Save summary to Firebase
-Future<void> _saveSummaryToFirebase(String courseId, String summary,String topicName) async {
-  print("Saving summary for courseId: $courseId"); // Debugging courseId
-  try {
-    await FirebaseFirestore.instance
-        .collection('courses') // Main collection
-        .doc(courseId) // Specific course document
-        .collection('summaries') // Sub-collection for summaries
-        .add({
-      'summary': summary,
-      'topicName': topicName,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    print("Summary saved successfully!");
-  } catch (e) {
-    print("Error saving summary: $e");
+
+  /// Save summary to Firebase
+  Future<void> _saveSummaryToFirebase(
+      String courseId, String summary, String topicName) async {
+    print("Saving summary for courseId: $courseId"); // Debugging courseId
+    try {
+      await FirebaseFirestore.instance
+          .collection('courses') // Main collection
+          .doc(courseId) // Specific course document
+          .collection('summaries') // Sub-collection for summaries
+          .add({
+        'summary': summary,
+        'topicName': topicName,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      print("Summary saved successfully!");
+    } catch (e) {
+      print("Error saving summary: $e");
+    }
   }
-}
 
-Future<void> _saveExtractedMaterialToFirebase(String courseId, String extractedText) async {
-  try {
-    // Save the extracted material in an "extractedMaterials" sub-collection
-    await FirebaseFirestore.instance
-        .collection('courses') // Main collection for courses
-        .doc(courseId) // Document for the specific course
-        .collection('extractedMaterials') // Sub-collection for extracted materials
-        .add({
-      'extractedText': extractedText,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+  Future<void> _saveExtractedMaterialToFirebase(
+      String courseId, String extractedText) async {
+    try {
+      // Save the extracted material in an "extractedMaterials" sub-collection
+      await FirebaseFirestore.instance
+          .collection('courses') // Main collection for courses
+          .doc(courseId) // Document for the specific course
+          .collection(
+              'extractedMaterials') // Sub-collection for extracted materials
+          .add({
+        'extractedText': extractedText,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-    print("Extracted material saved successfully!");
-  } catch (e) {
-    print("Error saving extracted material: $e");
+      print("Extracted material saved successfully!");
+    } catch (e) {
+      print("Error saving extracted material: $e");
+    }
   }
-}
-
 
   /// Save a course to the Firestore database with a unique courseId
-Future<void> _saveCourseToDatabase(
-    String courseName, String courseDescription) async {
-  final userId = currentUser?.uid;
+  Future<void> _saveCourseToDatabase(
+      String courseName, String courseDescription) async {
+    final userId = currentUser?.uid;
 
-  if (userId == null) {
-    _showErrorDialog('Error', 'User not logged in.');
-    return;
-  }
-
-  try {
-    // Check if a course with the same name already exists
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('courses')
-        .where('userId', isEqualTo: userId)
-        .where('courseName', isEqualTo: courseName)
-        .get();
-
-    if (querySnapshot.docs.isNotEmpty) {
-      // Show error pop-up if a duplicate course is found
-      _showErrorDialog(
-          'Duplicate Course', 'A course with this name already exists.');
+    if (userId == null) {
+      _showErrorDialog('Error', 'User not logged in.');
       return;
     }
 
-    // Create a new document reference to get a unique courseId
-    final newDocRef = FirebaseFirestore.instance.collection('courses').doc();
+    try {
+      // Check if a course with the same name already exists
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .where('userId', isEqualTo: userId)
+          .where('courseName', isEqualTo: courseName)
+          .get();
 
-    // If no duplicates, proceed to save the course
-    final newCourse = {
-      'courseId': newDocRef.id, // Unique courseId
-      'courseName': courseName,
-      'courseDescription': courseDescription,
-      'userId': userId,
-      'createdAt': FieldValue.serverTimestamp(),
-    };
+      if (querySnapshot.docs.isNotEmpty) {
+        // Show error pop-up if a duplicate course is found
+        _showErrorDialog(
+            'Duplicate Course', 'A course with this name already exists.');
+        return;
+      }
 
-    await newDocRef.set(newCourse);
+      // Create a new document reference to get a unique courseId
+      final newDocRef = FirebaseFirestore.instance.collection('courses').doc();
 
-    // Add the newly created course to the local list with all fields
-    setState(() {
-      courses.insert(0, {
-        'courseId': newDocRef.id, // Include courseId
+      // If no duplicates, proceed to save the course
+      final newCourse = {
+        'courseId': newDocRef.id, // Unique courseId
         'courseName': courseName,
         'courseDescription': courseDescription,
-      });
-    });
+        'userId': userId,
+        'createdAt': FieldValue.serverTimestamp(),
+      };
 
-    print("Course added: $newCourse"); // Debugging
-  } catch (e) {
-    _showErrorDialog('Error', 'Error saving course: $e');
+      await newDocRef.set(newCourse);
+
+      // Add the newly created course to the local list with all fields
+      setState(() {
+        courses.insert(0, {
+          'courseId': newDocRef.id, // Include courseId
+          'courseName': courseName,
+          'courseDescription': courseDescription,
+        });
+      });
+
+      print("Course added: $newCourse"); // Debugging
+    } catch (e) {
+      _showErrorDialog('Error', 'Error saving course: $e');
+    }
   }
-}
 
   void _showErrorDialog(String title, String message) {
     showDialog(
@@ -203,70 +207,70 @@ Future<void> _saveCourseToDatabase(
     );
   }
 
-Future<void> _deleteCourseFromDatabase(int index) async {
-  final userId = currentUser?.uid;
+  Future<void> _deleteCourseFromDatabase(int index) async {
+    final userId = currentUser?.uid;
 
-  if (userId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error: User not logged in')),
-    );
-    return;
-  }
-
-  try {
-    // Get the courseId for the course to delete
-    final courseId = courses[index]['courseId'];
-
-    if (courseId != null) {
-      // Step 1: Delete all summaries in the 'summaries' sub-collection
-      final summariesQuery = await FirebaseFirestore.instance
-          .collection('courses')
-          .doc(courseId)
-          .collection('summaries')
-          .get();
-
-      for (var summaryDoc in summariesQuery.docs) {
-        await summaryDoc.reference.delete();
-      }
-
-      // Step 2: Delete all extracted materials in the 'extractedMaterials' sub-collection
-      final extractedMaterialsQuery = await FirebaseFirestore.instance
-          .collection('courses')
-          .doc(courseId)
-          .collection('extractedMaterials')
-          .get();
-
-      for (var materialDoc in extractedMaterialsQuery.docs) {
-        await materialDoc.reference.delete();
-      }
-
-      // Step 3: Delete all events linked to this course in the 'events' collection
-      final eventsQuery = await FirebaseFirestore.instance
-          .collection('events')
-          .where('courseId', isEqualTo: courseId)
-          .get();
-
-      for (var eventDoc in eventsQuery.docs) {
-        await eventDoc.reference.delete();
-      }
-
-      // Step 4: Delete the course document itself
-      await FirebaseFirestore.instance.collection('courses').doc(courseId).delete();
-
-      // Remove the course from the local list
-      setState(() {
-        courses.removeAt(index);
-      });
-
-     
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: User not logged in')),
+      );
+      return;
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error deleting course: $e')),
-    );
-  }
-}
 
+    try {
+      // Get the courseId for the course to delete
+      final courseId = courses[index]['courseId'];
+
+      if (courseId != null) {
+        // Step 1: Delete all summaries in the 'summaries' sub-collection
+        final summariesQuery = await FirebaseFirestore.instance
+            .collection('courses')
+            .doc(courseId)
+            .collection('summaries')
+            .get();
+
+        for (var summaryDoc in summariesQuery.docs) {
+          await summaryDoc.reference.delete();
+        }
+
+        // Step 2: Delete all extracted materials in the 'extractedMaterials' sub-collection
+        final extractedMaterialsQuery = await FirebaseFirestore.instance
+            .collection('courses')
+            .doc(courseId)
+            .collection('extractedMaterials')
+            .get();
+
+        for (var materialDoc in extractedMaterialsQuery.docs) {
+          await materialDoc.reference.delete();
+        }
+
+        // Step 3: Delete all events linked to this course in the 'events' collection
+        final eventsQuery = await FirebaseFirestore.instance
+            .collection('events')
+            .where('courseId', isEqualTo: courseId)
+            .get();
+
+        for (var eventDoc in eventsQuery.docs) {
+          await eventDoc.reference.delete();
+        }
+
+        // Step 4: Delete the course document itself
+        await FirebaseFirestore.instance
+            .collection('courses')
+            .doc(courseId)
+            .delete();
+
+        // Remove the course from the local list
+        setState(() {
+          courses.removeAt(index);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting course: $e')),
+      );
+    }
+  }
 
   void _showAddCourseDialog() {
     TextEditingController courseNameController = TextEditingController();
@@ -505,105 +509,111 @@ Future<void> _deleteCourseFromDatabase(int index) async {
     return alignedLines.join('\n');
   }
 
-Future<void> _promptForTopicAndUpload(String courseId) async {
-  TextEditingController topicController = TextEditingController();
+  Future<void> _promptForTopicAndUpload(String courseId) async {
+    TextEditingController topicController = TextEditingController();
 
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Enter Topic Name'),
-        content: TextField(
-          controller: topicController,
-          decoration: InputDecoration(hintText: 'Topic name'),
-        ),
-        actions: [
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF4A4A4A), // Set color for "OK" button in error dialog
-            ),
-          ),
-          TextButton(
-            child: Text('Upload'),
-            style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF4A4A4A), // Set color for "OK" button in error dialog
-            ),
-            onPressed: () {
-              String trimmedTopic = topicController.text.trim();
-              if (trimmedTopic.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text("Error"),
-                      content: Text("Topic name cannot be empty."),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Close the error dialog
-                          },
-                          child: Text('OK'),
-                          style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF4A4A4A), // Set color for "OK" button in error dialog
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              } else {
-                Navigator.of(context).pop();
-                _checkTopicAndUpload(courseId, trimmedTopic);
-              }
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
-  // Query Firestore to see if the topic name already exists for this course
-  final querySnapshot = await FirebaseFirestore.instance
-      .collection('courses')
-      .doc(courseId)
-      .collection('summaries')
-      .where('topicName', isEqualTo: topicName)
-      .get();
-
-  if (querySnapshot.docs.isEmpty) {
-    // If topic name doesn't exist, proceed with the upload
-    _uploadFile(courseId, topicName);
-  } else {
-    // If topic name exists, show an error
-    showDialog(
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
-          title: Text("Error"),
-          content: Text("This topic name already exists for this course. Please choose a different name."),
+          title: Text('Enter Topic Name'),
+          content: TextField(
+            controller: topicController,
+            decoration: InputDecoration(hintText: 'Topic name'),
+          ),
           actions: [
             TextButton(
+              child: Text('Cancel'),
               onPressed: () {
-                Navigator.of(context).pop(); // Close the error dialog
+                Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(
+                    0xFF4A4A4A), // Set color for "OK" button in error dialog
+              ),
+            ),
+            TextButton(
+              child: Text('Upload'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(
+                    0xFF4A4A4A), // Set color for "OK" button in error dialog
+              ),
+              onPressed: () {
+                String trimmedTopic = topicController.text.trim();
+                if (trimmedTopic.isEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Error"),
+                        content: Text("Topic name cannot be empty."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pop(); // Close the error dialog
+                            },
+                            child: Text('OK'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(
+                                  0xFF4A4A4A), // Set color for "OK" button in error dialog
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  Navigator.of(context).pop();
+                  _checkTopicAndUpload(courseId, trimmedTopic);
+                }
+              },
             ),
           ],
         );
       },
     );
   }
-}
 
+  Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
+    // Query Firestore to see if the topic name already exists for this course
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(courseId)
+        .collection('summaries')
+        .where('topicName', isEqualTo: topicName)
+        .get();
 
+    if (querySnapshot.docs.isEmpty) {
+      // If topic name doesn't exist, proceed with the upload
+      _uploadFile(courseId, topicName);
+    } else {
+      // If topic name exists, show an error
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text(
+                "This topic name already exists for this course. Please choose a different name."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the error dialog
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  late List quizData = [];
   Future<void> _uploadFile(String courseId, String topicName) async {
-      print("Uploading file for courseId: $courseId, Topic: $topicName"); // Debug to check courseId
+    print(
+        "Uploading file for courseId: $courseId, Topic: $topicName"); // Debug to check courseId
 
     // File picker and upload process remains the same
     final result = await FilePicker.platform.pickFiles(
@@ -617,7 +627,8 @@ Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
       final uploadUrl = Uri.parse('https://summarize.ngrok-free.app/upload');
       final summarizeUrl =
           Uri.parse('https://summarize.ngrok-free.app/summarize');
-
+      final quizUrl =
+          Uri.parse('https://summarize.ngrok-free.app/generate_quiz_all');
       final uploadRequest = http.MultipartRequest('POST', uploadUrl);
       uploadRequest.files
           .add(await http.MultipartFile.fromPath('file', file.path));
@@ -651,126 +662,160 @@ Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
           final jsonResponse = jsonDecode(responseBody);
 
           if (jsonResponse.containsKey('extracted_text')) {
-  final extractedText = jsonResponse['extracted_text'];
+            final extractedText = jsonResponse['extracted_text'];
 
-  // Save the extracted text to Firestore
-  await _saveExtractedMaterialToFirebase(courseId, extractedText);
+            // Save the extracted text to Firestore
+            await _saveExtractedMaterialToFirebase(courseId, extractedText);
 
-  // Show a success pop-up for file upload
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text("File Uploaded Successfully ✔️"),
-        content: const Text("The file has been uploaded."),
-        actions: [
-          TextButton(
-            child: const Text("OK"),
-            style: TextButton.styleFrom(
-              foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-
-  // Show a loading pop-up for summary generation
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return const AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 10),
-            Text("Generating summary..."),
-          ],
-        ),
-      );
-    },
-  );
-
-  // Call the summarize endpoint
-  final summarizeResponse = await http.post(
-    summarizeUrl,
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'text': extractedText}),
-  );
-
-  // Dismiss the summary generation dialog
-  Navigator.pop(context);
-
-  if (summarizeResponse.statusCode == 200) {
-    final summaryJson = jsonDecode(summarizeResponse.body);
-
-    if (summaryJson.containsKey('summary')) {
-      final summary = summaryJson['summary'];
-      String formattedSummary = formatSummaryText(summary);
-
-      // Save the summary to Firebase
-      await _saveSummaryToFirebase(courseId, formattedSummary, topicName);
-
-      // Navigate to the summary screen with formatted text
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SummaryQuizWidget(summary: formattedSummary, topicName: topicName),
-        ),
-      );
-    } else {
-      // Show error pop-up if summary not found
-      await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Error"),
-            content: const Text("No summary found in response."),
-            actions: [
-              TextButton(
-                child: const Text("OK"),
-                style: TextButton.styleFrom(
-                  foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-  } else {
-    // Show error pop-up if summarization fails
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Error"),
-          content: Text(
-              "Failed to summarize text. Status code: ${summarizeResponse.statusCode}"),
-          actions: [
-            TextButton(
-              child: const Text("OK"),
-              style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
+            // Show a success pop-up for file upload
+            await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("File Uploaded Successfully ✔️"),
+                  content: const Text("The file has been uploaded."),
+                  actions: [
+                    TextButton(
+                      child: const Text("OK"),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
               },
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
- else {
+            );
+
+            // Show a loading pop-up for summary generation
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return const AlertDialog(
+                  content: Row(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 10),
+                      Text("Generating summary..."),
+                    ],
+                  ),
+                );
+              },
+            );
+
+            final quizRequest = http.MultipartRequest('POST', quizUrl);
+            quizRequest.files
+                .add(await http.MultipartFile.fromPath('file', file.path));
+
+            final quizResponse = await quizRequest.send();
+
+            if (quizResponse.statusCode == 200) {
+              // Convert the response stream into a string
+              final responseBody = await quizResponse.stream.bytesToString();
+
+              // Parse the responseBody into JSON
+              final jsonResponse = jsonDecode(responseBody);
+
+              // Access the quiz data directly from the parsed JSON
+              quizData = jsonResponse[
+                  'quiz']; // Remove .body as jsonResponse is already parsed
+
+              print(
+                  "Complete Response: ${jsonEncode(jsonResponse)}"); // Debugging
+              print("Quiz Data: $quizData"); // Debugging to verify quiz content
+            } else {
+              print(
+                  "Failed to fetch quiz. Status code: ${quizResponse.statusCode}");
+            }
+
+            // Call the summarize endpoint
+            final summarizeResponse = await http.post(
+              summarizeUrl,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({'text': extractedText}),
+            );
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QuizWidget(quizData: quizData),
+              ),
+            );
+            // Dismiss the summary generation dialog
+            Navigator.pop(context);
+
+            if (summarizeResponse.statusCode == 200) {
+              final summaryJson = jsonDecode(summarizeResponse.body);
+
+              if (summaryJson.containsKey('summary')) {
+                final summary = summaryJson['summary'];
+                String formattedSummary = formatSummaryText(summary);
+
+                // Save the summary to Firebase
+                await _saveSummaryToFirebase(
+                    courseId, formattedSummary, topicName);
+
+                // Navigate to the summary screen with formatted text
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SummaryQuizWidget(
+                        summary: formattedSummary,
+                        topicName: topicName,
+                        quizData: quizData),
+                  ),
+                );
+              } else {
+                // Show error pop-up if summary not found
+                await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text("Error"),
+                      content: const Text("No summary found in response."),
+                      actions: [
+                        TextButton(
+                          child: const Text("OK"),
+                          style: TextButton.styleFrom(
+                            foregroundColor:
+                                Color(0xFF4A4A4A), // Dark grey text
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            } else {
+              // Show error pop-up if summarization fails
+              await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Error"),
+                    content: Text(
+                        "Failed to summarize text. Status code: ${summarizeResponse.statusCode}"),
+                    actions: [
+                      TextButton(
+                        child: const Text("OK"),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+          } else {
             // Show error pop-up if extracted text not found
             await showDialog(
               context: context,
@@ -1030,176 +1075,186 @@ Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
               ),
             ),
             Expanded(
-  child: ListView.builder(
-    itemCount: courses.length,
-    itemBuilder: (context, index) {
-      final course = courses[index];
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Material(
-          elevation: 5.0,
-          borderRadius: BorderRadius.circular(20.0),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.0),
-              border: Border.all(
-                color: const Color(0xFFC5CAC6),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(13.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          course['courseName']!,
-                          style: FlutterFlowTheme.of(context)
-                              .headlineSmall
-                              .override(
-                                fontFamily: 'Outfit',
-                                color: const Color(0xFF14181B),
-                                fontSize: 24.0,
-                              ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit,
-                                color: Color(0xFF104036)),
-                            onPressed: () {
-                              _showEditCourseDialog(index);
-                            },
+              child: ListView.builder(
+                itemCount: courses.length,
+                itemBuilder: (context, index) {
+                  final course = courses[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Material(
+                      elevation: 5.0,
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20.0),
+                          border: Border.all(
+                            color: const Color(0xFFC5CAC6),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete,
-                                color: Color(0xFF104036)),
-                            onPressed: () async {
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Delete Course'),
-                                    content: const Text(
-                                        'Are you sure you want to delete this course?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(false),
-                                        child: const Text('Cancel'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.black,
-                                        ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(13.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      course['courseName']!,
+                                      style: FlutterFlowTheme.of(context)
+                                          .headlineSmall
+                                          .override(
+                                            fontFamily: 'Outfit',
+                                            color: const Color(0xFF14181B),
+                                            fontSize: 24.0,
+                                          ),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Color(0xFF104036)),
+                                        onPressed: () {
+                                          _showEditCourseDialog(index);
+                                        },
                                       ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(true),
-                                        child: const Text('Delete'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.black,
-                                        ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Color(0xFF104036)),
+                                        onPressed: () async {
+                                          final confirmed =
+                                              await showDialog<bool>(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title:
+                                                    const Text('Delete Course'),
+                                                content: const Text(
+                                                    'Are you sure you want to delete this course?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(false),
+                                                    child: const Text('Cancel'),
+                                                    style: TextButton.styleFrom(
+                                                      foregroundColor:
+                                                          Colors.black,
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(true),
+                                                    child: const Text('Delete'),
+                                                    style: TextButton.styleFrom(
+                                                      foregroundColor:
+                                                          Colors.black,
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+
+                                          if (confirmed == true) {
+                                            await _deleteCourseFromDatabase(
+                                                index);
+                                          }
+                                        },
                                       ),
                                     ],
-                                  );
-                                },
-                              );
+                                  ),
+                                ],
+                              ),
+                              if (course['courseDescription']!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 0.0, bottom: 10.0),
+                                  child: Text(
+                                    course['courseDescription']!,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'Outfit',
+                                          color: const Color(0xFF8F9291),
+                                          fontSize: 16.0,
+                                        ),
+                                  ),
+                                ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  FFButtonWidget(
+                                    onPressed: () {
+                                      final courseId = course['courseId'];
+                                      print(
+                                          "courseId: $courseId"); // Debug to check if it is null or empty
 
-                              if (confirmed == true) {
-                                await _deleteCourseFromDatabase(index);
-                              }
-                            },
+                                      if (courseId != null) {
+                                        _promptForTopicAndUpload(courseId);
+                                        //_uploadFile(courseId);
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Error: Course ID not found'),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    text: 'Upload',
+                                    icon: const Icon(Icons.upload_file),
+                                    options: FFButtonOptions(
+                                      height: 40.0,
+                                      color: const Color(0xFF104036),
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            fontFamily: 'Inter Tight',
+                                            color: Colors.white,
+                                          ),
+                                      borderRadius: BorderRadius.circular(25.0),
+                                    ),
+                                  ),
+                                  FFButtonWidget(
+                                    onPressed: () async {
+                                      context.pushNamed('history');
+                                    },
+                                    text: 'History',
+                                    icon: const Icon(Icons.history),
+                                    options: FFButtonOptions(
+                                      height: 40.0,
+                                      color: const Color(0xFF104036),
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            fontFamily: 'Inter Tight',
+                                            color: Colors.white,
+                                          ),
+                                      borderRadius: BorderRadius.circular(25.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  if (course['courseDescription']!.isNotEmpty)
-                    Padding(
-                      padding:
-                          const EdgeInsets.only(top: 0.0, bottom: 10.0),
-                      child: Text(
-                        course['courseDescription']!,
-                        style: FlutterFlowTheme.of(context)
-                            .bodyMedium
-                            .override(
-                              fontFamily: 'Outfit',
-                              color: const Color(0xFF8F9291),
-                              fontSize: 16.0,
-                            ),
+                        ),
                       ),
                     ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      FFButtonWidget(
-                        onPressed: () {
-                          final courseId = course['courseId'];
-                              print("courseId: $courseId"); // Debug to check if it is null or empty
-
-                          if (courseId != null) {
-                            _promptForTopicAndUpload(courseId);
-                            //_uploadFile(courseId);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Error: Course ID not found'),
-                              ),
-                            );
-                          }
-                        },
-                        text: 'Upload',
-                        icon: const Icon(Icons.upload_file),
-                        options: FFButtonOptions(
-                          height: 40.0,
-                          color: const Color(0xFF104036),
-                          textStyle: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .override(
-                                fontFamily: 'Inter Tight',
-                                color: Colors.white,
-                              ),
-                          borderRadius: BorderRadius.circular(25.0),
-                        ),
-                      ),
-                      FFButtonWidget(
-                        onPressed: () async {
-                          context.pushNamed('history');
-                        },
-                        text: 'History',
-                        icon: const Icon(Icons.history),
-                        options: FFButtonOptions(
-                          height: 40.0,
-                          color: const Color(0xFF104036),
-                          textStyle: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .override(
-                                fontFamily: 'Inter Tight',
-                                color: Colors.white,
-                              ),
-                          borderRadius: BorderRadius.circular(25.0),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-          ),
-        ),
-      );
-    },
-  ),
-),
-
           ],
         ),
       ),
     );
   }
 }
-
-

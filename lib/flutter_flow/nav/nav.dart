@@ -99,8 +99,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => SummaryQuizWidget(
             summary: params.getParam('summary', ParamType.String) ??
                 'Default Summary', // Pass the summary
-            topicName: params.getParam('topicName', ParamType.String) ?? 'Default Topic',
-
+            topicName: params.getParam('topicName', ParamType.String) ??
+                'Default Topic',
+            quizData: [],
           ),
         ),
         FFRoute(
@@ -123,7 +124,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'Quiz',
           path: '/quiz',
-          builder: (context, params) => const QuizWidget(),
+          builder: (context, params) => const QuizWidget(
+            quizData: [],
+          ),
         ),
         FFRoute(
           name: 'history', // Ensure the name matches exactly
@@ -371,6 +374,22 @@ class TransitionInfo {
 
   static TransitionInfo appDefault() =>
       const TransitionInfo(hasTransition: false);
+
+  // Add this method to serialize the properties into a JSON-compatible format
+  Map<String, dynamic> toJson() {
+    return {
+      'hasTransition': hasTransition,
+      'transitionType': transitionType
+          .name, // Assuming PageTransitionType has a 'name' property
+      'duration': duration.inMilliseconds, // Serialize Duration as milliseconds
+      'alignment': alignment != null
+          ? {
+              'x': alignment!.x,
+              'y': alignment!.y
+            } // Serialize Alignment as a map
+          : null,
+    };
+  }
 }
 
 class RootPageContext {
