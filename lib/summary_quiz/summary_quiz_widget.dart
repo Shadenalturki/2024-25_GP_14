@@ -147,356 +147,377 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: Stack(
-            children: [
-              Stack(
-                children: [
-                  Align(
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Align(
-                              alignment: const AlignmentDirectional(-0.9, -0.9),
-                              child: Text(
-                                '${widget.topicName}',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'DM Sans',
-                                      color: Colors.black,
-                                      fontSize: 25.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+          child: SingleChildScrollView(
+            // Added to prevent overflow
+            child: Stack(
+              children: [
+                Stack(
+                  children: [
+                    Align(
+                      alignment: const AlignmentDirectional(0.0, 0.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Align(
+                                alignment:
+                                    const AlignmentDirectional(-0.9, -0.9),
+                                child: Text(
+                                  '${widget.topicName}',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'DM Sans',
+                                        color: Colors.black,
+                                        fontSize: 25.0,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Align(
-                          alignment: const AlignmentDirectional(0.0, 0.0),
-                          child: Container(
-                            width: 352.0,
-                            height: 384.0,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFE1EEEB),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(25.0),
-                                bottomRight: Radius.circular(25.0),
-                                topLeft: Radius.circular(25.0),
-                                topRight: Radius.circular(25.0),
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                Align(
-                                  alignment: AlignmentDirectional(-0.9, -0.85),
-                                  child: Text(
-                                    'Summary',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'DM Sans',
-                                          color: Color(0xFF202325),
-                                          fontSize: 18,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 80,
-                                  left: 0,
-                                  right: 0,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE1EEEB),
-                                        borderRadius:
-                                            BorderRadius.circular(12.0),
-                                      ),
-                                      constraints: const BoxConstraints(
-                                        maxWidth: 600.0,
-                                        minHeight: 100.0,
-                                        maxHeight: 290.0,
-                                      ),
-                                      padding: const EdgeInsets.fromLTRB(
-                                          16.0, 1.0, 16.0, 1.0),
-                                      child: SingleChildScrollView(
-                                        child: Text(
-                                          showTranslated
-                                              ? translatedSummary ??
-                                                  "Translation error"
-                                              : widget.summary,
-                                          textAlign: TextAlign.start,
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Inter',
-                                                color: Colors.black,
-                                                fontSize: 15.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment:
-                                      const AlignmentDirectional(0.91, -0.79),
-                                  child: Container(
-                                    width: 46.0,
-                                    height: 45.0,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFC4DED7),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          blurRadius: 4.0,
-                                          color: Color(0x33000000),
-                                          offset: Offset(
-                                            0.0,
-                                            2.0,
-                                          ),
-                                        )
-                                      ],
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment:
-                                      const AlignmentDirectional(0.88, -0.76),
-                                  child: InkWell(
-                                    onTap: _translateSummary,
-                                    child: ClipRRect(
-                                      borderRadius: const BorderRadius.only(
-                                        bottomLeft: Radius.circular(0.0),
-                                        bottomRight: Radius.circular(0.0),
-                                        topLeft: Radius.circular(0.0),
-                                        topRight: Radius.circular(0.0),
-                                      ),
-                                      child: Image.asset(
-                                        'assets/images/arabic.png',
-                                        width: 35.0,
-                                        height: 35.0,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
-                        ),
-                        Align(
-                          alignment: const AlignmentDirectional(0.0, 0.5),
-                          child: Container(
-                            width: 352.0,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFFF3E1),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(25.0),
-                                bottomRight: Radius.circular(25.0),
-                                topLeft: Radius.circular(25.0),
-                                topRight: Radius.circular(25.0),
+                          Align(
+                            alignment: const AlignmentDirectional(0.0, 0.0),
+                            child: Container(
+                              width: 352.0,
+                              height: 384.0,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE1EEEB),
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(25.0),
+                                  bottomRight: Radius.circular(25.0),
+                                  topLeft: Radius.circular(25.0),
+                                  topRight: Radius.circular(25.0),
+                                ),
                               ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'Quiz time!',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'DM Sans',
-                                          color: Colors.black,
-                                          fontSize: 18.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                              child: Stack(
+                                children: [
+                                  Align(
+                                    alignment:
+                                        AlignmentDirectional(-0.9, -0.85),
+                                    child: Text(
+                                      'Summary',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'DM Sans',
+                                            color: Color(0xFF202325),
+                                            fontSize: 18,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
                                   ),
-                                ),
-                                const Divider(
-                                  color: Colors.black26,
-                                  thickness: 1.0,
-                                ),
-                                // Render quiz data dynamically
-                                ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: quizData?.length ?? 0,
-                                  itemBuilder: (context, index) {
-                                    final question =
-                                        quizData![index]['question'];
-                                    final options = quizData![index]['options'];
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0, horizontal: 16.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${index + 1}. $question',
+                                  Positioned(
+                                    top: 80,
+                                    left: 0,
+                                    right: 0,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE1EEEB),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          maxWidth: 600.0,
+                                          minHeight: 100.0,
+                                          maxHeight: 290.0,
+                                        ),
+                                        padding: const EdgeInsets.fromLTRB(
+                                            16.0, 1.0, 16.0, 1.0),
+                                        child: SingleChildScrollView(
+                                          child: Text(
+                                            showTranslated
+                                                ? translatedSummary ??
+                                                    "Translation error"
+                                                : widget.summary,
+                                            textAlign: TextAlign.start,
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
-                                                  fontFamily: 'DM Sans',
+                                                  fontFamily: 'Inter',
                                                   color: Colors.black,
                                                   fontSize: 15.0,
-                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight: FontWeight.w500,
                                                 ),
                                           ),
-                                          const SizedBox(height: 8.0),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: (options
-                                                    as Map<String, dynamic>)
-                                                .entries
-                                                .map((entry) {
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 4.0),
-                                                child: Row(
-                                                  children: [
-                                                    Radio<String>(
-                                                      value: entry.key,
-                                                      groupValue:
-                                                          selectedAnswers
-                                                                      .length >
-                                                                  index
-                                                              ? selectedAnswers[
-                                                                  index]
-                                                              : null,
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          if (selectedAnswers
-                                                                  .length <=
-                                                              index) {
-                                                            selectedAnswers
-                                                                .add(value);
-                                                          } else {
-                                                            selectedAnswers[
-                                                                index] = value;
-                                                          }
-                                                        });
-                                                      },
-                                                    ),
-                                                    Text(
-                                                      entry.value,
-                                                      style:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment:
+                                        const AlignmentDirectional(0.91, -0.79),
+                                    child: Container(
+                                      width: 46.0,
+                                      height: 45.0,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFC4DED7),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            blurRadius: 4.0,
+                                            color: Color(0x33000000),
+                                            offset: Offset(
+                                              0.0,
+                                              2.0,
+                                            ),
+                                          )
+                                        ],
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment:
+                                        const AlignmentDirectional(0.88, -0.76),
+                                    child: InkWell(
+                                      onTap: _translateSummary,
+                                      child: ClipRRect(
+                                        borderRadius: const BorderRadius.only(
+                                          bottomLeft: Radius.circular(0.0),
+                                          bottomRight: Radius.circular(0.0),
+                                          topLeft: Radius.circular(0.0),
+                                          topRight: Radius.circular(0.0),
+                                        ),
+                                        child: Image.asset(
+                                          'assets/images/arabic.png',
+                                          width: 35.0,
+                                          height: 35.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: const AlignmentDirectional(0.0, 0.5),
+                            child: Container(
+                              width: 352.0,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFFF3E1),
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(25.0),
+                                  bottomRight: Radius.circular(25.0),
+                                  topLeft: Radius.circular(25.0),
+                                  topRight: Radius.circular(25.0),
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'Quiz time!',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'DM Sans',
+                                            color: Colors.black,
+                                            fontSize: 18.0,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                  const Divider(
+                                    color: Colors.black26,
+                                    thickness: 1.0,
+                                  ),
+                                  // Render quiz data dynamically
+                                  ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: quizData?.length ?? 0,
+                                    itemBuilder: (context, index) {
+                                      final question =
+                                          quizData![index]['question'];
+                                      final options =
+                                          quizData![index]['options'];
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8.0, horizontal: 16.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${index + 1}. $question',
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily: 'DM Sans',
+                                                        color: Colors.black,
+                                                        fontSize: 15.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                            ),
+                                            const SizedBox(height: 8.0),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: (options
+                                                      as Map<String, dynamic>)
+                                                  .entries
+                                                  .map((entry) {
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          bottom: 4.0),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Radio<String>(
+                                                        value: entry.key,
+                                                        groupValue: selectedAnswers
+                                                                    .length >
+                                                                index
+                                                            ? selectedAnswers[
+                                                                index]
+                                                            : null,
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            if (selectedAnswers
+                                                                    .length <=
+                                                                index) {
+                                                              selectedAnswers
+                                                                  .add(value);
+                                                            } else {
+                                                              selectedAnswers[
+                                                                      index] =
+                                                                  value;
+                                                            }
+                                                          });
+                                                        },
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          entry.value,
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
                                                               .bodyMedium
                                                               .override(
                                                                 fontFamily:
                                                                     'DM Sans',
                                                                 fontSize: 14.0,
                                                               ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12.0),
-                                  child: FFButtonWidget(
-                                    onPressed: () {
-                                      // Add logic to handle quiz submission
-                                      print(
-                                          'Selected answers: $selectedAnswers');
+                                                          maxLines:
+                                                              3, // Optional: Limit the number of lines for answers
+                                                          overflow: TextOverflow
+                                                              .ellipsis, // Optional: Truncate long text
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }).toList(),
+                                            ),
+                                          ],
+                                        ),
+                                      );
                                     },
-                                    text: 'Submit Quiz',
-                                    options: FFButtonOptions(
-                                      width: 200.0,
-                                      height: 40.0,
-                                      color: const Color(0xFF104036),
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'DM Sans',
-                                            color: Colors.white,
-                                          ),
-                                      borderSide: const BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1.0,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12.0),
+                                    child: FFButtonWidget(
+                                      onPressed: () {
+                                        // Add logic to handle quiz submission
+                                        print(
+                                            'Selected answers: $selectedAnswers');
+                                      },
+                                      text: 'Submit Quiz',
+                                      options: FFButtonOptions(
+                                        width: 200.0,
+                                        height: 40.0,
+                                        color: const Color(0xFF104036),
+                                        textStyle: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily: 'DM Sans',
+                                              color: Colors.white,
+                                            ),
+                                        borderSide: const BorderSide(
+                                          color: Colors.transparent,
+                                          width: 1.0,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
                                       ),
-                                      borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ].divide(const SizedBox(height: 8.0)),
-                    ),
-                  ),
-                ],
-              ),
-              Align(
-                alignment: const AlignmentDirectional(0.85, 0.97),
-                child: InkWell(
-                  onTap: () async {
-                    context.pushNamed('chatbot');
-                  },
-                  child: Container(
-                    width: 90.0,
-                    height: 90.0,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAF4F0),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFFBFD5CB),
+                        ].divide(const SizedBox(height: 8.0)),
                       ),
                     ),
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.asset(
-                            'assets/images/ai-assistant.png',
-                            width: 57.0,
-                            height: 50.0,
-                            fit: BoxFit.contain,
+                  ],
+                ),
+                Align(
+                  alignment: const AlignmentDirectional(0.85, 0.97),
+                  child: InkWell(
+                    onTap: () async {
+                      context.pushNamed('chatbot');
+                    },
+                    child: Container(
+                      width: 90.0,
+                      height: 90.0,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF4F0),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFBFD5CB),
+                        ),
+                      ),
+                      alignment: const AlignmentDirectional(0.0, 0.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.asset(
+                              'assets/images/ai-assistant.png',
+                              width: 57.0,
+                              height: 50.0,
+                              fit: BoxFit.contain,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Tutor Bot',
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'Inter',
-                                    color: const Color(0xFF104036),
-                                  ),
-                        ),
-                      ],
+                          Text(
+                            'Tutor Bot',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'Inter',
+                                  color: const Color(0xFF104036),
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
