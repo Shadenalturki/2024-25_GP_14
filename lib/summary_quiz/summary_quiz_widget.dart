@@ -31,7 +31,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   bool showTranslated = false; // Toggle to track which text to show
   String? summary;
   List? quizData;
-  String? topicName ;
+  String? topicName;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -300,7 +300,6 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                           alignment: const AlignmentDirectional(0.0, 0.5),
                           child: Container(
                             width: 352.0,
-                            height: 62.0,
                             decoration: const BoxDecoration(
                               color: Color(0xFFFFF3E1),
                               borderRadius: BorderRadius.only(
@@ -310,11 +309,11 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                 topRight: Radius.circular(25.0),
                               ),
                             ),
-                            child: Stack(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Align(
-                                  alignment:
-                                      const AlignmentDirectional(-0.9, -0.53),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
                                   child: Text(
                                     'Quiz time!',
                                     style: FlutterFlowTheme.of(context)
@@ -328,61 +327,120 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                         ),
                                   ),
                                 ),
-                                Align(
-                                  alignment:
-                                      const AlignmentDirectional(0.89, -0.01),
-                                  child: InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                        'Quiz',
-                                        extra: <String, dynamic>{
-                                          'topicName': topicName,
-                                          'quizData': quizData,
-                                          
-                                        },
-                                      );
-                                    },
-                                    child: Container(
-                                      width: 46.0,
-                                      height: 45.0,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0x77E5D6BD),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            blurRadius: 4.0,
-                                            color: Color(0x33838282),
-                                            offset: Offset(
-                                              0.0,
-                                              2.0,
-                                            ),
-                                          )
+                                const Divider(
+                                  color: Colors.black26,
+                                  thickness: 1.0,
+                                ),
+                                // Render quiz data dynamically
+                                ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: quizData?.length ?? 0,
+                                  itemBuilder: (context, index) {
+                                    final question =
+                                        quizData![index]['question'];
+                                    final options = quizData![index]['options'];
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8.0, horizontal: 16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${index + 1}. $question',
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  fontFamily: 'DM Sans',
+                                                  color: Colors.black,
+                                                  fontSize: 15.0,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 8.0),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: (options
+                                                    as Map<String, dynamic>)
+                                                .entries
+                                                .map((entry) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 4.0),
+                                                child: Row(
+                                                  children: [
+                                                    Radio<String>(
+                                                      value: entry.key,
+                                                      groupValue:
+                                                          selectedAnswers
+                                                                      .length >
+                                                                  index
+                                                              ? selectedAnswers[
+                                                                  index]
+                                                              : null,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          if (selectedAnswers
+                                                                  .length <=
+                                                              index) {
+                                                            selectedAnswers
+                                                                .add(value);
+                                                          } else {
+                                                            selectedAnswers[
+                                                                index] = value;
+                                                          }
+                                                        });
+                                                      },
+                                                    ),
+                                                    Text(
+                                                      entry.value,
+                                                      style:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'DM Sans',
+                                                                fontSize: 14.0,
+                                                              ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
                                         ],
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
                                       ),
-                                      child: InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.pushNamed(
-                                            'Quiz',
-                                            extra: <String, dynamic>{
-                                              'quizData': quizData,
-                                            },
-                                          );
-                                        },
-                                        child: const Icon(
-                                          Icons.quiz_outlined,
-                                          color: Colors.black,
-                                          size: 25.0,
-                                        ),
+                                    );
+                                  },
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 12.0),
+                                  child: FFButtonWidget(
+                                    onPressed: () {
+                                      // Add logic to handle quiz submission
+                                      print(
+                                          'Selected answers: $selectedAnswers');
+                                    },
+                                    text: 'Submit Quiz',
+                                    options: FFButtonOptions(
+                                      width: 200.0,
+                                      height: 40.0,
+                                      color: const Color(0xFF104036),
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            fontFamily: 'DM Sans',
+                                            color: Colors.white,
+                                          ),
+                                      borderSide: const BorderSide(
+                                        color: Colors.transparent,
+                                        width: 1.0,
                                       ),
+                                      borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
                                 ),
