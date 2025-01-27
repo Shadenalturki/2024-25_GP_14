@@ -31,6 +31,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   bool showTranslated = false; // Toggle to track which text to show
   String? summary;
   List? quizData;
+  String? topicName ;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -105,6 +106,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   List<String?> selectedAnswers = [];
   @override
   Widget build(BuildContext context) {
+    topicName = widget.topicName;
     print("Received topic: ${widget.topicName}");
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -338,7 +340,9 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                       context.pushNamed(
                                         'Quiz',
                                         extra: <String, dynamic>{
+                                          'topicName': topicName,
                                           'quizData': quizData,
+                                          
                                         },
                                       );
                                     },

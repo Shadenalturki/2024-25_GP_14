@@ -124,8 +124,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'Quiz',
           path: '/quiz',
-          builder: (context, params) => const QuizWidget(
+          builder: (context, params) =>  QuizWidget(
             quizData: [],
+            topicName: params.getParam('topicName', ParamType.String)??
+                'Default Topic',
           ),
         ),
         FFRoute(
