@@ -32,6 +32,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   String? summary;
   List? quizData;
   String? topicName;
+  String resultMessage = "";
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -101,6 +102,22 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
         showTranslated = true;
       });
     }
+  }
+
+  void _calculateQuizResult() {
+    int correctCount = 0;
+
+    for (int i = 0; i < widget.quizData.length; i++) {
+      final correctAnswer = widget.quizData[i]['correctAnswer'];
+      if (selectedAnswers.length > i && selectedAnswers[i] == correctAnswer) {
+        correctCount++;
+      }
+    }
+
+    setState(() {
+      resultMessage =
+          "You answered $correctCount out of ${widget.quizData.length} correctly!";
+    });
   }
 
   List<String?> selectedAnswers = [];
@@ -305,6 +322,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                             alignment: const AlignmentDirectional(0.0, 0.5),
                             child: Container(
                               width: 352.0,
+                              height: 384.0,
                               decoration: const BoxDecoration(
                                 color: Color(0xFFFFF3E1),
                                 borderRadius: BorderRadius.only(
@@ -337,102 +355,107 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                     thickness: 1.0,
                                   ),
                                   // Render quiz data dynamically
-                                  ListView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: quizData?.length ?? 0,
-                                    itemBuilder: (context, index) {
-                                      final question =
-                                          quizData![index]['question'];
-                                      final options =
-                                          quizData![index]['options'];
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8.0, horizontal: 16.0),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '${index + 1}. $question',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily: 'DM Sans',
-                                                        color: Colors.black,
-                                                        fontSize: 15.0,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                            ),
-                                            const SizedBox(height: 8.0),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: (options
-                                                      as Map<String, dynamic>)
-                                                  .entries
-                                                  .map((entry) {
-                                                return Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          bottom: 4.0),
-                                                  child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Radio<String>(
-                                                        value: entry.key,
-                                                        groupValue: selectedAnswers
-                                                                    .length >
-                                                                index
-                                                            ? selectedAnswers[
-                                                                index]
-                                                            : null,
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            if (selectedAnswers
-                                                                    .length <=
-                                                                index) {
-                                                              selectedAnswers
-                                                                  .add(value);
-                                                            } else {
-                                                              selectedAnswers[
-                                                                      index] =
-                                                                  value;
-                                                            }
-                                                          });
-                                                        },
-                                                      ),
-                                                      Expanded(
-                                                        child: Text(
-                                                          entry.value,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'DM Sans',
-                                                                fontSize: 14.0,
-                                                              ),
-                                                          maxLines:
-                                                              3, // Optional: Limit the number of lines for answers
-                                                          overflow: TextOverflow
-                                                              .ellipsis, // Optional: Truncate long text
+                                  Expanded(
+                                    child: ListView.builder(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: quizData?.length ?? 0,
+                                      itemBuilder: (context, index) {
+                                        final question =
+                                            quizData![index]['question'];
+                                        final options =
+                                            quizData![index]['options'];
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8.0, horizontal: 16.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${index + 1}. $question',
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily: 'DM Sans',
+                                                          color: Colors.black,
+                                                          fontSize: 15.0,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              }).toList(),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: (options
+                                                        as Map<String, dynamic>)
+                                                    .entries
+                                                    .map((entry) {
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            bottom: 4.0),
+                                                    child: Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Radio<String>(
+                                                          value: entry.key,
+                                                          groupValue: selectedAnswers
+                                                                      .length >
+                                                                  index
+                                                              ? selectedAnswers[
+                                                                  index]
+                                                              : null,
+                                                          onChanged: (value) {
+                                                            setState(() {
+                                                              if (selectedAnswers
+                                                                      .length <=
+                                                                  index) {
+                                                                selectedAnswers
+                                                                    .add(value);
+                                                              } else {
+                                                                selectedAnswers[
+                                                                        index] =
+                                                                    value;
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                        Expanded(
+                                                          child: Text(
+                                                            entry.value,
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontFamily:
+                                                                      'DM Sans',
+                                                                  fontSize:
+                                                                      14.0,
+                                                                ),
+                                                            maxLines:
+                                                                3, // Optional: Limit the number of lines for answers
+                                                            overflow: TextOverflow
+                                                                .ellipsis, // Optional: Truncate long text
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -473,7 +496,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                   ],
                 ),
                 Align(
-                  alignment: const AlignmentDirectional(0.85, 0.97),
+                  alignment: AlignmentDirectional.bottomCenter,
                   child: InkWell(
                     onTap: () async {
                       context.pushNamed('chatbot');
