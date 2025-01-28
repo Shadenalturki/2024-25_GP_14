@@ -58,8 +58,8 @@ Future<void> fetchEvents() async {
       final data = doc.data();
       String? courseName;
 
-      // Check if the event has a linked course
-      if (data['courseId'] != null) {
+      // Fetch courseName properly
+      if (data['courseId'] != null && data['courseId'] != '') {
         final courseSnapshot = await FirebaseFirestore.instance
             .collection('courses')
             .doc(data['courseId'])
@@ -77,22 +77,18 @@ Future<void> fetchEvents() async {
         'eventDate': data['eventDate'] is Timestamp
             ? (data['eventDate'] as Timestamp).toDate()
             : DateTime.parse(data['eventDate'] as String),
-        'courseName': courseName, // Include course name
+        'courseId': data['courseId'],  // Ensure courseId is stored
+        'courseName': courseName, // Now courseName is properly fetched
       };
     }).toList());
 
-    // Sort events by eventDate in ascending order
-    events.sort((a, b) {
-      final dateA = a['eventDate'] as DateTime;
-      final dateB = b['eventDate'] as DateTime;
-      return dateA.compareTo(dateB);
-    });
+    events.sort((a, b) => (a['eventDate'] as DateTime).compareTo(b['eventDate'] as DateTime));
 
-    // Extract unique dates for highlighting
+    // Mark dates with events
     markedDates = events
         .map((event) {
           final eventDate = event['eventDate'] as DateTime;
-          return DateTime(eventDate.year, eventDate.month, eventDate.day); // Only the date
+          return DateTime(eventDate.year, eventDate.month, eventDate.day);
         })
         .toSet()
         .toList();
@@ -102,6 +98,7 @@ Future<void> fetchEvents() async {
     print('Error fetching events from Firestore: $e');
   }
 }
+
 
 
   // Function to delete an event from Firestore
