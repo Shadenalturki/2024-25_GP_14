@@ -42,6 +42,7 @@ class SignUpWidget extends StatefulWidget {
 class _SignUpWidgetState extends State<SignUpWidget>
     with TickerProviderStateMixin {
   late SignUpModel _model;
+bool _isPasswordValid = true; // Tracks the validity of the password
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -208,6 +209,7 @@ class _SignUpWidgetState extends State<SignUpWidget>
     // Check password constraints
 
     if (password.length < 8 || password.contains(' ')) {
+       _isPasswordValid = false;
       return 'Password must be at least 8 characters long and cannot contain spaces.';
     }
 
@@ -666,19 +668,26 @@ class _SignUpWidgetState extends State<SignUpWidget>
                                                         ],
                                                         obscureText: !_model
                                                             .passwordSignUpVisibility,
+                                                             onChanged: (value) {
+    // Validate password on change but don't show dialog
+    if (value.length < 8) {
+      setState(() => _isPasswordValid = false);
+    } else {
+      setState(() => _isPasswordValid = true);
+    }
+  },
                                                         decoration:
                                                             InputDecoration(
                                                           labelText: 'Password',
-                                                          labelStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelLarge
-                                                                  .override(
-                                                                    fontFamily:
-                                                                        'Inter',
+                                                          labelStyle:FlutterFlowTheme.of( context).labelLarge
+                                                                  .override(fontFamily:'Inter',
                                                                     letterSpacing:
-                                                                        0.0,
-                                                                  ),
+                                                                        0.0,),
+                                                                  helperText: 'Password should be at least 8 characters long',
+    helperStyle: TextStyle(
+      color:  _isPasswordValid ? Colors.grey : Colors.red, // Color changes based on the password validity
+      
+    ),
                                                           enabledBorder:
                                                               OutlineInputBorder(
                                                             borderSide:
