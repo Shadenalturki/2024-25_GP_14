@@ -358,7 +358,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                   Expanded(
                                     child: ListView.builder(
                                       physics:
-                                          const NeverScrollableScrollPhysics(),
+                                          const  BouncingScrollPhysics(),
                                       shrinkWrap: true,
                                       itemCount: quizData?.length ?? 0,
                                       itemBuilder: (context, index) {
