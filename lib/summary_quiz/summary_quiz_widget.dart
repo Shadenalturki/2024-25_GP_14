@@ -75,6 +75,9 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
 
     // Fetch translation only if it's not already loaded
     const apiUrl = 'https://summarize.ngrok-free.app/translate';
+    setState(() {
+      isTranslating = true; // Set translating state to true
+    });
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -89,7 +92,8 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
             translatedSummary = responseData['translated_summary'];
             print(
                 "Translated summary: ${responseData['translated_summary']} ${widget.summary}}, $translatedSummary");
-            showTranslated = true; // Toggle to show translated text
+            showTranslated = true;
+            isTranslating = false; // Toggle to show translated text
           });
         } else {
           throw Exception('Response does not contain translated_summary');
@@ -102,11 +106,13 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
       setState(() {
         translatedSummary = "Error in translation!";
         showTranslated = true;
+        isTranslating = false;
       });
     }
   }
 
   bool showCorrectAnswers = false;
+  bool isTranslating = false;
   bool showQuiz = false;
 
   List<String?> selectedAnswers = [];
@@ -240,22 +246,29 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                         padding: const EdgeInsets.fromLTRB(
                                             16.0, 1.0, 16.0, 1.0),
                                         child: SingleChildScrollView(
-                                          child: Text(
-                                            showTranslated
-                                                ? translatedSummary! ??
-                                                    "Translation error"
-                                                : widget.summary,
-                                            textAlign: TextAlign.start,
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Inter',
-                                                  color: Colors.black,
-                                                  fontSize: 15.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w500,
+                                          child: isTranslating
+                                              ? const Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                )
+                                              : Text(
+                                                  showTranslated
+                                                      ? translatedSummary! ??
+                                                          "Translation error"
+                                                      : widget.summary,
+                                                  textAlign: TextAlign.start,
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily: 'Inter',
+                                                        color: Colors.black,
+                                                        fontSize: 15.0,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
                                                 ),
-                                          ),
                                         ),
                                       ),
                                     ),
