@@ -1,21 +1,16 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:summ_a_ize/quiz/quiz_widget.dart';
 import 'package:summ_a_ize/summary_quiz/summary_quiz_widget.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
@@ -182,10 +177,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
               style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
               ),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -203,10 +198,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
               style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
               ),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -311,10 +306,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
               style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
               ),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -334,11 +329,11 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('OK'),
                             style: TextButton.styleFrom(
                               foregroundColor:
-                                  Color(0xFF4A4A4A), // Dark grey text
+                                  const Color(0xFF4A4A4A), // Dark grey text
                             ),
+                            child: const Text('OK'),
                           ),
                         ],
                       );
@@ -346,10 +341,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   );
                 }
               },
-              child: const Text('Add'),
               style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
               ),
+              child: const Text('Add'),
             ),
           ],
         );
@@ -393,10 +388,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
               style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
               ),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
@@ -463,11 +458,11 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('OK'),
                             style: TextButton.styleFrom(
                               foregroundColor:
-                                  Color(0xFF4A4A4A), // Dark grey text
+                                  const Color(0xFF4A4A4A), // Dark grey text
                             ),
+                            child: const Text('OK'),
                           ),
                         ],
                       );
@@ -475,10 +470,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   );
                 }
               },
-              child: const Text('Save'),
               style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
               ),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -523,14 +518,13 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Enter Topic Name'),
+          title: const Text('Enter Topic Name'),
           content: TextField(
             controller: topicController,
-            decoration: InputDecoration(hintText: 'Topic name'),
+            decoration: const InputDecoration(hintText: 'Topic name'),
           ),
           actions: [
             TextButton(
-              child: Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -538,9 +532,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 foregroundColor: const Color(
                     0xFF4A4A4A), // Set color for "OK" button in error dialog
               ),
+              child: const Text('Cancel'),
             ),
             TextButton(
-              child: Text('Upload'),
               style: TextButton.styleFrom(
                 foregroundColor: const Color(
                     0xFF4A4A4A), // Set color for "OK" button in error dialog
@@ -552,19 +546,19 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text("Error"),
-                        content: Text("Topic name cannot be empty."),
+                        title: const Text("Error"),
+                        content: const Text("Topic name cannot be empty."),
                         actions: [
                           TextButton(
                             onPressed: () {
                               Navigator.of(context)
                                   .pop(); // Close the error dialog
                             },
-                            child: Text('OK'),
                             style: TextButton.styleFrom(
                               foregroundColor: const Color(
                                   0xFF4A4A4A), // Set color for "OK" button in error dialog
                             ),
+                            child: const Text('OK'),
                           ),
                         ],
                       );
@@ -575,6 +569,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   _checkTopicAndUpload(courseId, trimmedTopic);
                 }
               },
+              child: const Text('Upload'),
             ),
           ],
         );
@@ -600,19 +595,19 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Error"),
-            content: Text(
+            title: const Text("Error"),
+            content: const Text(
                 "This topic name already exists for this course. Please choose a different name."),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the error dialog
                 },
-                child: Text('OK'),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(
                       0xFF4A4A4A), // Set color for "OK" button in error dialog
                 ),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -687,13 +682,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   content: const Text("The file has been uploaded."),
                   actions: [
                     TextButton(
-                      child: const Text("OK"),
                       style: TextButton.styleFrom(
-                        foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                        foregroundColor:
+                            const Color(0xFF4A4A4A), // Dark grey text
                       ),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
+                      child: const Text("OK"),
                     ),
                   ],
                 );
@@ -703,7 +699,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             // Show a loading pop-up for summary generation
             showDialog(
               context: context,
-              barrierDismissible: false,
+              barrierDismissible: true,
               builder: (BuildContext context) {
                 return const AlertDialog(
                   content: Row(
@@ -748,15 +744,15 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode({'text': extractedText}),
             );
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QuizWidget(
-                  quizData: quizData,
-                  topicName: topicName,
-                ),
-              ),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => QuizWidget(
+            //       quizData: quizData,
+            //       topicName: topicName,
+            //     ),
+            //   ),
+            // );
             // Dismiss the summary generation dialog
             Navigator.pop(context);
 
@@ -792,14 +788,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                       content: const Text("No summary found in response."),
                       actions: [
                         TextButton(
-                          child: const Text("OK"),
                           style: TextButton.styleFrom(
                             foregroundColor:
-                                Color(0xFF4A4A4A), // Dark grey text
+                                const Color(0xFF4A4A4A), // Dark grey text
                           ),
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
+                          child: const Text("OK"),
                         ),
                       ],
                     );
@@ -817,13 +813,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                         "Failed to summarize text. Status code: ${summarizeResponse.statusCode}"),
                     actions: [
                       TextButton(
-                        child: const Text("OK"),
                         style: TextButton.styleFrom(
-                          foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                          foregroundColor:
+                              const Color(0xFF4A4A4A), // Dark grey text
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
+                        child: const Text("OK"),
                       ),
                     ],
                   );
@@ -840,13 +837,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   content: const Text("No extracted text found in response."),
                   actions: [
                     TextButton(
-                      child: const Text("OK"),
                       style: TextButton.styleFrom(
-                        foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                        foregroundColor:
+                            const Color(0xFF4A4A4A), // Dark grey text
                       ),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
+                      child: const Text("OK"),
                     ),
                   ],
                 );
@@ -864,13 +862,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     "Failed to upload file. Status code: ${uploadResponse.statusCode}"),
                 actions: [
                   TextButton(
-                    child: const Text("OK"),
                     style: TextButton.styleFrom(
-                      foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                      foregroundColor:
+                          const Color(0xFF4A4A4A), // Dark grey text
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
+                    child: const Text("OK"),
                   ),
                 ],
               );
@@ -890,13 +889,13 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               content: Text("Error uploading file: $e"),
               actions: [
                 TextButton(
-                  child: const Text("OK"),
                   style: TextButton.styleFrom(
-                    foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                    foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
+                  child: const Text("OK"),
                 ),
               ],
             );
@@ -913,13 +912,13 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             content: const Text("No file selected or unsupported format."),
             actions: [
               TextButton(
-                child: const Text("OK"),
                 style: TextButton.styleFrom(
-                  foregroundColor: Color(0xFF4A4A4A), // Dark grey text
+                  foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
                 ),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
+                child: const Text("OK"),
               ),
             ],
           );
@@ -978,7 +977,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       body: SafeArea(
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 220,
               child: Stack(
                 alignment: const AlignmentDirectional(1, -1),
@@ -1155,21 +1154,21 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                                     onPressed: () =>
                                                         Navigator.of(context)
                                                             .pop(false),
-                                                    child: const Text('Cancel'),
                                                     style: TextButton.styleFrom(
                                                       foregroundColor:
                                                           Colors.black,
                                                     ),
+                                                    child: const Text('Cancel'),
                                                   ),
                                                   TextButton(
                                                     onPressed: () =>
                                                         Navigator.of(context)
                                                             .pop(true),
-                                                    child: const Text('Delete'),
                                                     style: TextButton.styleFrom(
                                                       foregroundColor:
                                                           Colors.black,
                                                     ),
+                                                    child: const Text('Delete'),
                                                   ),
                                                 ],
                                               );
