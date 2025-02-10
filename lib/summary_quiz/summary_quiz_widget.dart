@@ -1,15 +1,14 @@
-import 'package:summ_a_ize/flutter_flow/flutter_flow_radio_button.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http; // Add this line for HTTP requests
 import 'package:summ_a_ize/flutter_flow/flutter_flow_widgets.dart';
-import 'package:summ_a_ize/flutter_flow/form_field_controller.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'package:flutter/material.dart';
 import 'summary_quiz_model.dart';
+
 export 'summary_quiz_model.dart';
-import 'package:http/http.dart' as http; // Add this line for HTTP requests
-import 'dart:convert'; // Add this line to decode JSON responses
 
 class SummaryQuizWidget extends StatefulWidget {
   final String summary;
@@ -39,6 +38,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => SummaryQuizModel());
+    print("Summary: ${widget.summary}");
     translatedSummary = widget.summary; // Initialize with the original summary
     summary = widget.summary;
     quizData = widget.quizData;
@@ -51,7 +51,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     super.dispose();
   }
 
-  Future<void> _translateSummary() async {
+  Future<void> translateSummary() async {
     print(
         "Translation button pressed"); // This should show up in the console when the button is clicked
 
@@ -87,6 +87,8 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
         if (responseData.containsKey('translated_summary')) {
           setState(() {
             translatedSummary = responseData['translated_summary'];
+            print(
+                "Translated summary: ${responseData['translated_summary']} ${widget.summary}}, $translatedSummary");
             showTranslated = true; // Toggle to show translated text
           });
         } else {
@@ -104,23 +106,11 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     }
   }
 
-  void _calculateQuizResult() {
-    int correctCount = 0;
-
-    for (int i = 0; i < widget.quizData.length; i++) {
-      final correctAnswer = widget.quizData[i]['correctAnswer'];
-      if (selectedAnswers.length > i && selectedAnswers[i] == correctAnswer) {
-        correctCount++;
-      }
-    }
-
-    setState(() {
-      resultMessage =
-          "You answered $correctCount out of ${widget.quizData.length} correctly!";
-    });
-  }
+  bool showCorrectAnswers = false;
+  bool showQuiz = false;
 
   List<String?> selectedAnswers = [];
+
   @override
   Widget build(BuildContext context) {
     topicName = widget.topicName;
@@ -184,7 +174,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                 alignment:
                                     const AlignmentDirectional(-0.9, -0.9),
                                 child: Text(
-                                  '${widget.topicName}',
+                                  widget.topicName,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -216,14 +206,14 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                 children: [
                                   Align(
                                     alignment:
-                                        AlignmentDirectional(-0.9, -0.85),
+                                        const AlignmentDirectional(-0.9, -0.85),
                                     child: Text(
                                       'Summary',
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'DM Sans',
-                                            color: Color(0xFF202325),
+                                            color: const Color(0xFF202325),
                                             fontSize: 18,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.bold,
@@ -252,7 +242,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                         child: SingleChildScrollView(
                                           child: Text(
                                             showTranslated
-                                                ? translatedSummary ??
+                                                ? translatedSummary! ??
                                                     "Translation error"
                                                 : widget.summary,
                                             textAlign: TextAlign.start,
@@ -297,7 +287,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                     alignment:
                                         const AlignmentDirectional(0.88, -0.76),
                                     child: InkWell(
-                                      onTap: _translateSummary,
+                                      onTap: translateSummary,
                                       child: ClipRRect(
                                         borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(0.0),
@@ -318,175 +308,402 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                               ),
                             ),
                           ),
-                          Align(
-                            alignment: const AlignmentDirectional(0.0, 0.5),
-                            child: Container(
-                              width: 352.0,
-                              height: 384.0,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFFFF3E1),
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(25.0),
-                                  bottomRight: Radius.circular(25.0),
-                                  topLeft: Radius.circular(25.0),
-                                  topRight: Radius.circular(25.0),
+                          Visibility(
+                            visible: showQuiz,
+                            child: Align(
+                              alignment: const AlignmentDirectional(0.0, 0.5),
+                              child: Container(
+                                width: 352.0,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFFF3E1),
+                                  borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(25.0),
+                                    bottomRight: Radius.circular(25.0),
+                                    topLeft: Radius.circular(25.0),
+                                    topRight: Radius.circular(25.0),
+                                  ),
                                 ),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Quiz time!',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'DM Sans',
-                                            color: Colors.black,
-                                            fontSize: 18.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ),
-                                  const Divider(
-                                    color: Colors.black26,
-                                    thickness: 1.0,
-                                  ),
-                                  // Render quiz data dynamically
-                                  Expanded(
-                                    child: ListView.builder(
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemCount: quizData?.length ?? 0,
-                                      itemBuilder: (context, index) {
-                                        final question =
-                                            quizData![index]['question'];
-                                        final options =
-                                            quizData![index]['options'];
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8.0, horizontal: 16.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${index + 1}. $question',
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily: 'DM Sans',
-                                                          color: Colors.black,
-                                                          fontSize: 15.0,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Quiz time!',
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                fontFamily: 'DM Sans',
+                                                color: Colors.black,
+                                                fontSize: 18.0,
+                                                letterSpacing: 0.0,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                              const SizedBox(height: 8.0),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: (options
-                                                        as Map<String, dynamic>)
-                                                    .entries
-                                                    .map((entry) {
-                                                  return Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            bottom: 4.0),
-                                                    child: Row(
+                                        ),
+                                      ),
+                                      const Divider(
+                                        color: Colors.black26,
+                                        thickness: 1.0,
+                                      ),
+                                      // Render quiz data dynamically
+                                      ListView.builder(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        shrinkWrap: true,
+                                        itemCount: quizData?.length ?? 0,
+                                        itemBuilder: (context, index) {
+                                          final question =
+                                              quizData![index]['question'];
+                                          final options = quizData![index]
+                                                  ['options']
+                                              as Map<String, dynamic>;
+                                          final correctAnswer = quizData![index]
+                                                  ['correct']
+                                              .toString()
+                                              .split(')')[0]
+                                              .toLowerCase()
+                                              .trim();
+
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8.0,
+                                                horizontal: 16.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${index + 1}. $question',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily: 'DM Sans',
+                                                        color: Colors.black,
+                                                        fontSize: 15.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                ),
+                                                const SizedBox(height: 8.0),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: options.entries
+                                                      .map((entry) {
+                                                    // Check if this option is the correct answer
+                                                    bool isCorrectAnswer = entry
+                                                            .key
+                                                            .toLowerCase() ==
+                                                        correctAnswer;
+
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              bottom: 4.0),
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Radio<String>(
+                                                            value: entry.key,
+                                                            groupValue: selectedAnswers
+                                                                        .length >
+                                                                    index
+                                                                ? selectedAnswers[
+                                                                    index]
+                                                                : null,
+                                                            onChanged:
+                                                                showCorrectAnswers
+                                                                    ? null
+                                                                    : (value) {
+                                                                        setState(
+                                                                            () {
+                                                                          if (selectedAnswers.length <=
+                                                                              index) {
+                                                                            selectedAnswers.add(value);
+                                                                          } else {
+                                                                            selectedAnswers[index] =
+                                                                                value;
+                                                                          }
+                                                                        });
+                                                                      },
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              entry.value,
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'DM Sans',
+                                                                    fontSize:
+                                                                        14.0,
+                                                                    color: showCorrectAnswers &&
+                                                                            isCorrectAnswer
+                                                                        ? Colors
+                                                                            .green
+                                                                        : Colors
+                                                                            .black,
+                                                                    fontWeight: showCorrectAnswers &&
+                                                                            isCorrectAnswer
+                                                                        ? FontWeight
+                                                                            .bold
+                                                                        : FontWeight
+                                                                            .normal,
+                                                                  ),
+                                                              maxLines: 3,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 12.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () {
+                                            // Debug print to check selected answers and correct answers
+                                            print(
+                                                'Selected answers: $selectedAnswers');
+                                            print('Quiz data: $quizData');
+
+                                            int correctCount = 0;
+                                            int incorrectCount = 0;
+
+                                            if (selectedAnswers.length ==
+                                                quizData!.length) {
+                                              for (int i = 0;
+                                                  i < quizData!.length;
+                                                  i++) {
+                                                // Extract just the letter from the correct answer (before the first ')')
+                                                String correctAnswer =
+                                                    quizData![i]['correct']
+                                                        .toString()
+                                                        .split(')')[0]
+                                                        .toLowerCase()
+                                                        .trim();
+
+                                                if (selectedAnswers.length >
+                                                        i &&
+                                                    selectedAnswers[i] !=
+                                                        null) {
+                                                  // Debug prints to verify the comparison
+                                                  print('Question ${i + 1}:');
+                                                  print(
+                                                      'Selected answer: ${selectedAnswers[i]!.toLowerCase()}');
+                                                  print(
+                                                      'Correct answer: $correctAnswer');
+
+                                                  if (selectedAnswers[i]!
+                                                          .toLowerCase() ==
+                                                      correctAnswer) {
+                                                    correctCount++;
+                                                    print('✓ Correct!');
+                                                  } else {
+                                                    incorrectCount++;
+                                                    print('✗ Incorrect');
+                                                  }
+                                                } else {
+                                                  incorrectCount++; // Count unanswered questions as incorrect
+                                                  print(
+                                                      'Question ${i + 1}: No answer selected');
+                                                }
+                                              }
+
+                                              // Debug print final counts
+                                              print(
+                                                  'Final correct count: $correctCount');
+                                              print(
+                                                  'Final incorrect count: $incorrectCount');
+
+                                              setState(() {
+                                                showCorrectAnswers =
+                                                    true; // Add this line to trigger showing correct answers
+                                              });
+
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                      'Quiz Results',
+                                                      style: FlutterFlowTheme
+                                                              .of(context)
+                                                          .titleLarge
+                                                          .override(
+                                                            fontFamily:
+                                                                'DM Sans',
+                                                            color: const Color(
+                                                                0xFF104036),
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                    ),
+                                                    content: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        Radio<String>(
-                                                          value: entry.key,
-                                                          groupValue: selectedAnswers
-                                                                      .length >
-                                                                  index
-                                                              ? selectedAnswers[
-                                                                  index]
-                                                              : null,
-                                                          onChanged: (value) {
-                                                            setState(() {
-                                                              if (selectedAnswers
-                                                                      .length <=
-                                                                  index) {
-                                                                selectedAnswers
-                                                                    .add(value);
-                                                              } else {
-                                                                selectedAnswers[
-                                                                        index] =
-                                                                    value;
-                                                              }
-                                                            });
-                                                          },
+                                                        Text(
+                                                          'Correct Answers: $correctCount',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'DM Sans',
+                                                                color: Colors
+                                                                    .green,
+                                                                fontSize: 16,
+                                                              ),
                                                         ),
-                                                        Expanded(
-                                                          child: Text(
-                                                            entry.value,
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  color: Colors
-                                                                      .black,
-                                                                  fontFamily:
-                                                                      'DM Sans',
-                                                                  fontSize:
-                                                                      14.0,
-                                                                ),
-                                                            maxLines:
-                                                                3, // Optional: Limit the number of lines for answers
-                                                            overflow: TextOverflow
-                                                                .ellipsis, // Optional: Truncate long text
-                                                          ),
+                                                        const SizedBox(
+                                                            height: 8),
+                                                        Text(
+                                                          'Incorrect Answers: $incorrectCount',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'DM Sans',
+                                                                color:
+                                                                    Colors.red,
+                                                                fontSize: 16,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 16),
+                                                        Text(
+                                                          'Score: ${((correctCount / quizData!.length) * 100).toStringAsFixed(1)}%',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'DM Sans',
+                                                                color: const Color(
+                                                                    0xFF104036),
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
                                                         ),
                                                       ],
                                                     ),
+                                                    actions: [
+                                                      TextButton(
+                                                        child: Text(
+                                                          'Close',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .labelLarge
+                                                              .override(
+                                                                fontFamily:
+                                                                    'DM Sans',
+                                                                color: const Color(
+                                                                    0xFF104036),
+                                                              ),
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    ],
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15),
+                                                    ),
+                                                    backgroundColor:
+                                                        const Color(0xFFFAFAFC),
                                                   );
-                                                }).toList(),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0),
-                                    child: FFButtonWidget(
-                                      onPressed: () {
-                                        // Add logic to handle quiz submission
-                                        print(
-                                            'Selected answers: $selectedAnswers');
-                                      },
-                                      text: 'Submit Quiz',
-                                      options: FFButtonOptions(
-                                        width: 200.0,
-                                        height: 40.0,
-                                        color: const Color(0xFF104036),
-                                        textStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .override(
-                                              fontFamily: 'DM Sans',
-                                              color: Colors.white,
+                                                },
+                                              );
+                                            } else {
+                                              Fluttertoast.showToast(
+                                                  msg:
+                                                      "Please select an answer for all questions.",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity: ToastGravity.CENTER,
+                                                  textColor: Colors.white,
+                                                  fontSize: 16.0);
+                                            }
+                                          },
+                                          text: 'Submit Quiz',
+                                          options: FFButtonOptions(
+                                            width: 200.0,
+                                            height: 40.0,
+                                            color: const Color(0xFF104036),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'DM Sans',
+                                                      color: Colors.white,
+                                                    ),
+                                            borderSide: const BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
                                             ),
-                                        borderSide: const BorderSide(
-                                          color: Colors.transparent,
-                                          width: 1.0,
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
                                         ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            child: FFButtonWidget(
+                              onPressed: () {
+                                setState(() {
+                                  showQuiz =
+                                      !showQuiz; // Toggle quiz visibility
+                                });
+                              },
+                              text: showQuiz
+                                  ? 'Hide Quiz'
+                                  : 'Show Quiz', // Change button text based on state
+                              options: FFButtonOptions(
+                                width: 200.0,
+                                height: 40.0,
+                                color: const Color(0xFF104036),
+                                textStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .override(
+                                      fontFamily: 'DM Sans',
+                                      color: Colors.white,
+                                    ),
+                                borderSide: const BorderSide(
+                                  color: Colors.transparent,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
                           ),

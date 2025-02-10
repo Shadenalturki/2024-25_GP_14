@@ -612,7 +612,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
   }
 
   Widget _buildStyledTab(Widget child, int index) {
-    final TabBarThemeData tabBarTheme = TabBarTheme.of(context);
+    final TabBarTheme tabBarTheme = TabBarTheme.of(context);
 
     final double animationValue;
     if (index == _currentIndex) {
