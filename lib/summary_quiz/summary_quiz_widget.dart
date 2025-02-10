@@ -338,37 +338,6 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                 fontSize: 18.0,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.bold,
-                                  // Render quiz data dynamically
-                                  Expanded(
-                                    child: ListView.builder(
-                                      physics:
-                                          const  BouncingScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemCount: quizData?.length ?? 0,
-                                      itemBuilder: (context, index) {
-                                        final question =
-                                            quizData![index]['question'];
-                                        final options =
-                                            quizData![index]['options'];
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8.0, horizontal: 16.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${index + 1}. $question',
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily: 'DM Sans',
-                                                          color: Colors.black,
-                                                          fontSize: 15.0,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
                                               ),
                                         ),
                                       ),
