@@ -126,6 +126,45 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: const Color(0xFFFAFAFC),
+        floatingActionButton: InkWell(
+          onTap: () async {
+            context.pushNamed('chatbot');
+          },
+          child: Container(
+            width: 90.0,
+            height: 90.0,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF4F0),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFFBFD5CB),
+              ),
+            ),
+            alignment: const AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.asset(
+                    'assets/images/ai-assistant.png',
+                    width: 57.0,
+                    height: 50.0,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                Text(
+                  'Tutor Bot',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        fontFamily: 'Inter',
+                        color: const Color(0xFF104036),
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
         appBar: AppBar(
           backgroundColor: const Color(0xFF104036),
           automaticallyImplyLeading: false,
@@ -724,50 +763,6 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                       ),
                     ),
                   ],
-                ),
-                Align(
-                  alignment: AlignmentDirectional.bottomCenter,
-                  child: InkWell(
-                    onTap: () async {
-                      context.pushNamed('chatbot');
-                    },
-                    child: Container(
-                      width: 90.0,
-                      height: 90.0,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEAF4F0),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFFBFD5CB),
-                        ),
-                      ),
-                      alignment: const AlignmentDirectional(0.0, 0.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.asset(
-                              'assets/images/ai-assistant.png',
-                              width: 57.0,
-                              height: 50.0,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                          Text(
-                            'Tutor Bot',
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  fontFamily: 'Inter',
-                                  color: const Color(0xFF104036),
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
               ],
             ),
