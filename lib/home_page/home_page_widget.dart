@@ -67,31 +67,43 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   /// Save summary to Firebase
-  Future<void> _saveSummaryToFirebase(String courseId, String summary,
-      String topicName, List<dynamic> quizData) async {
-    print("Saving summary for courseId: $courseId"); // Debugging courseId
-    try {
-      // Generate a unique document ID for the summary
-      final newDocRef = FirebaseFirestore.instance
-          .collection('courses') // Main collection
-          .doc(courseId) // Specific course document
-          .collection('summaries') // Sub-collection for summaries
-          .doc(); // Generate a unique document reference
+Future<void> _saveSummaryToFirebase(
+    String courseId, String summary, String topicName, List<dynamic> quizData) async {
+  try {
+    final newDocRef = FirebaseFirestore.instance
+        .collection('courses')
+        .doc(courseId)
+        .collection('summaries')
+        .doc();
 
-      final summaryId = newDocRef.id; // Get the unique ID
+    await newDocRef.set({
+      'summaryId': newDocRef.id,
+      'summary': summary,
+      'topicName': topicName,
+      'quizData': quizData,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
-      await newDocRef.set({
-        'summaryId': summaryId, // Save the generated summaryId
-        'summary': summary,
-        'topicName': topicName,
-        'quizData': quizData,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      print("Summary saved successfully with summaryId: $summaryId");
-    } catch (e) {
-      print("Error saving summary: $e");
-    }
+    print("✅ Summary saved for courseId: $courseId, topic: $topicName");
+
+    // ✅ Debug Firestore write for topics
+    final topicRef = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(courseId)
+        .collection('topics')
+        .add({
+      'topicName': topicName,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    print("✅ Topic saved in Firestore with ID: ${topicRef.id}");
+
+  } catch (e) {
+    print("❌ Error saving summary and topic: $e");
   }
+}
+
+
 
   Future<void> _saveExtractedMaterialToFirebase(
       String courseId, String extractedText) async {
@@ -1239,8 +1251,18 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                   ),
                                   FFButtonWidget(
                                     onPressed: () async {
-                                      context.pushNamed('history');
-                                    },
+  final courseId = course['courseId']; // Retrieve courseId
+  if (courseId != null) {
+    context.pushNamed(
+      'history',
+      queryParameters: {'courseId': courseId}, // Pass courseId as a query parameter
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error: Course ID not found')),
+    );
+  }
+},
                                     text: 'History',
                                     icon: const Icon(Icons.history),
                                     options: FFButtonOptions(

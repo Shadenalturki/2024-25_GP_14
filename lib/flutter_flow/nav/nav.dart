@@ -131,10 +131,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         FFRoute(
-          name: 'history', // Ensure the name matches exactly
-          path: '/history',
-          builder: (context, params) => const HistoryWidget(),
-        ),
+  name: 'history',
+  path: '/history',
+  builder: (context, params) {
+    final courseId = params.getParam('courseId', ParamType.String);
+
+    if (courseId == null || courseId.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: const Center(child: Text('Error: Course ID is missing')),
+      );
+    }
+
+    return HistoryWidget(courseId: courseId);
+  },
+),
+
         FFRoute(
           name: 'calendar',
           path: '/calendar',
