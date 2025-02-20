@@ -93,17 +93,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: '/signUp',
           builder: (context, params) => const SignUpWidget(),
         ),
-        FFRoute(
-          name: 'summaryQuiz',
-          path: '/summaryQuiz',
-          builder: (context, params) => SummaryQuizWidget(
-            summary: params.getParam('summary', ParamType.String) ??
-                'Default Summary', // Pass the summary
-            topicName: params.getParam('topicName', ParamType.String) ??
-                'Default Topic',
-            quizData: [],
-          ),
-        ),
+      FFRoute(
+  name: 'summaryQuiz',
+  path: '/summaryQuiz',
+  builder: (context, params) => SummaryQuizWidget(
+    summary: params.getParam('summary', ParamType.String) ?? 'Default Summary',
+    topicName: params.getParam('topicName', ParamType.String) ?? 'Default Topic',
+    quizData: jsonDecode(params.getParam('quizData', ParamType.String) ?? '[]'),
+  ),
+),
+
+
         FFRoute(
           name: 'chatbot',
           path: '/chatbot',

@@ -1,15 +1,12 @@
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'history_model.dart';
-export 'history_model.dart';
+import 'package:flutter/material.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 
 class HistoryWidget extends StatefulWidget {
-  final String courseId; // Accept courseId to fetch topics
+  final String courseId;
+
   const HistoryWidget({Key? key, required this.courseId}) : super(key: key);
 
   @override
@@ -17,122 +14,126 @@ class HistoryWidget extends StatefulWidget {
 }
 
 class _HistoryWidgetState extends State<HistoryWidget> {
+  Future<void> _navigateToSummaryQuiz(String topicName) async {
+    try {
+      // Fetch the summary and quiz data from Firestore
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(widget.courseId)
+          .collection('summaries')
+          .where('topicName', isEqualTo: topicName)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final summaryData = querySnapshot.docs.first.data();
+        final summary = summaryData['summary'] ?? 'No summary available';
+        final quizData = summaryData['quizData'] ?? [];
+
+        // Navigate to SummaryQuizWidget with fetched data
+        context.pushNamed(
+          'summaryQuiz',
+          queryParameters: {
+            'summary': summary,
+            'topicName': topicName,
+          },
+          extra: {
+            'quizData': quizData,
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No summary found for this topic.')),
+        );
+      }
+    } catch (e) {
+      print('❌ Error fetching summary and quiz: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load summary and quiz data.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF104036),
+        backgroundColor: const Color(0xFF104036),
         title: Text(
           'History',
           style: FlutterFlowTheme.of(context).headlineMedium.override(
                 fontFamily: 'Inknut Antiqua',
                 color: Colors.white,
                 fontSize: 22,
-                letterSpacing: 0.0,
                 fontWeight: FontWeight.bold,
               ),
         ),
         leading: FlutterFlowIconButton(
-          borderColor: Colors.transparent,
           borderRadius: 30,
-          borderWidth: 1,
           buttonSize: 60,
-          icon: Icon(Icons.arrow_back_rounded, color: Colors.white, size: 30),
-          onPressed: () async {
-            context.pop();
-          },
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          onPressed: () => context.pop(),
         ),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-    .collection('courses')
-    .doc(widget.courseId)
-    .collection('topics')
-    .orderBy('createdAt', descending: true)
-    .withConverter<Map<String, dynamic>>(
-      fromFirestore: (snapshot, _) => snapshot.data()!,
-      toFirestore: (data, _) => data,
-    )
-    .snapshots(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('courses')
+            .doc(widget.courseId)
+            .collection('topics')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return Center(
-                child: Text(
-                  "No topics found.",
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'Inter',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No topics found.'));
+          }
+
+          final topics = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: topics.length,
+            itemBuilder: (context, index) {
+              final topicData = topics[index].data() as Map<String, dynamic>;
+              final topicName = topicData['topicName'];
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: Material(
+                  elevation: 5,
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    onTap: () => _navigateToSummaryQuiz(topicName),
+                    child: Container(
+                      height: 82,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFDFDFD),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFC5CAC6)),
                       ),
-                ),
-              );
-            }
-
-            final topics = snapshot.data!.docs;
-
-            return ListView.builder(
-              itemCount: topics.length,
-              itemBuilder: (context, index) {
-                final topicData = topics[index].data() as Map<String, dynamic>;
-                final topicName = topicData['topicName'];
-
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                  child: Material(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        // Navigate to summary page for this topic
-                        context.pushNamed(
-                          'summaryQuiz',
-                          queryParameters: {
-                            'topicName': topicName, // Pass topic name
-                          },
-                        );
-                      },
-                      child: Container(
-                        width: 364,
-                        height: 82,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFDFDFD),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Color(0xFFC5CAC6), width: 1),
-                        ),
-                        child: Align(
-                          alignment: AlignmentDirectional(-1, 0),
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
-                            child: Text(
-                              topicName,
-                              textAlign: TextAlign.start,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    color: Colors.black,
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        topicName,
+                        style: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                              fontFamily: 'Inter',
+                              color: Colors.black,
+                              fontSize: 25,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ),
-                        ),
                       ),
                     ),
                   ),
-                );
-              },
-            );
-          },
-        ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
