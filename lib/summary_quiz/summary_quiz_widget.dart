@@ -15,15 +15,18 @@ class SummaryQuizWidget extends StatefulWidget {
   final String summary;
   final String topicName;
   final List quizData;
-  const SummaryQuizWidget(
-      {required this.summary,
-      required this.topicName,
-      super.key,
-      required this.quizData});
+
+  const SummaryQuizWidget({
+    required this.summary,
+    required this.topicName,
+    required this.quizData,
+    super.key,
+  });
 
   @override
   State<SummaryQuizWidget> createState() => _SummaryQuizWidgetState();
 }
+
 
 class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   late SummaryQuizModel _model;
