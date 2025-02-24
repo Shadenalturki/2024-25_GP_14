@@ -77,7 +77,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     }
 
     // Fetch translation only if it's not already loaded
-    const apiUrl = 'https://f94f-110-39-21-190.ngrok-free.app';
+    const apiUrl = 'https://0a9d4a89058b.ngrok.app';
     setState(() {
       isTranslating = true; // Set translating state to true
     });

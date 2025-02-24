@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:summ_a_ize/auth/firebase_auth/auth_util.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -20,7 +22,11 @@ class ChatbotWidget extends StatefulWidget {
 class _ChatbotWidgetState extends State<ChatbotWidget> {
   late ChatbotModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final List<Map<String, String>> _messages = [];
+  List<Map<String, String>> _messages = [];
+  bool _isLoading = true;
+
+  // Get current user UID
+  // String get currentUserUid => currentUser?.uid ?? '';
 
   @override
   void initState() {
@@ -28,6 +34,9 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
     _model = createModel(context, () => ChatbotModel());
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
+
+    // Load previous chat messages when screen initializes
+    _loadPreviousChat();
   }
 
   @override
@@ -36,29 +45,111 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
     super.dispose();
   }
 
+  // Load previous chat messages from Firestore
+  Future<void> _loadPreviousChat() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (currentUserUid.isNotEmpty) {
+        final chatRef = FirebaseFirestore.instance
+            .collection('chats')
+            .doc(currentUserUid)
+            .collection('messages')
+            .orderBy('timestamp', descending: false);
+
+        final chatSnapshot = await chatRef.get();
+
+        if (chatSnapshot.docs.isNotEmpty) {
+          List<Map<String, String>> loadedMessages = [];
+
+          for (var doc in chatSnapshot.docs) {
+            final data = doc.data();
+            loadedMessages.add({
+              "role": data['role'] as String,
+              "message": data['message'] as String,
+            });
+          }
+
+          setState(() {
+            _messages = loadedMessages;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading previous chat: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Save a message to Firestore
+  Future<void> _saveMessageToFirestore(String role, String message) async {
+    if (currentUserUid.isEmpty) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('chats')
+          .doc(currentUserUid)
+          .collection('messages')
+          .add({
+        'role': role,
+        'message': message,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error saving message to Firestore: $e');
+    }
+  }
+
   Future<void> _sendMessage(String message) async {
+    // Add user message to local state
     setState(() {
       _messages.add({"role": "user", "message": message});
     });
 
+    // Save user message to Firestore
+    await _saveMessageToFirestore("user", message);
+
+    // Send message to API
     final response = await http.post(
-      Uri.parse('https://f94f-110-39-21-190.ngrok-free.app/chat'),
+      Uri.parse('https://0a9d4a89058b.ngrok.app/chat'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({"question": message}),
     );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      final botResponse = data["answer"];
+
+      // Add bot response to local state
       setState(() {
-        _messages.add({"role": "bot", "message": data["answer"]});
+        _messages.add({"role": "bot", "message": botResponse});
       });
+
+      // Save bot response to Firestore
+      await _saveMessageToFirestore("bot", botResponse);
     } else {
+      const errorMessage = "Failed to get a response from the bot.";
+
+      // Add error message to local state
       setState(() {
-        _messages.add({
-          "role": "bot",
-          "message": "Failed to get a response from the bot."
-        });
+        _messages.add({"role": "bot", "message": errorMessage});
       });
+
+      // Save error message to Firestore
+      await _saveMessageToFirestore("bot", errorMessage);
     }
   }
 
@@ -119,7 +210,64 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
               ],
             ),
           ),
-          actions: const [],
+          actions: [
+            // Optional: Add a button to clear chat history
+            FlutterFlowIconButton(
+              borderColor: Colors.transparent,
+              borderRadius: 8.0,
+              buttonSize: 40.0,
+              icon: const Icon(
+                Icons.delete_outline,
+                color: Colors.white,
+                size: 24.0,
+              ),
+              onPressed: () async {
+                // Show confirmation dialog
+                final shouldClear = await showDialog<bool>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Clear Chat History?'),
+                      content:
+                          const Text('This will delete all previous messages.'),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Clear'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (shouldClear == true && currentUserUid.isNotEmpty) {
+                  try {
+                    // Delete all messages from Firestore
+                    final querySnapshot = await FirebaseFirestore.instance
+                        .collection('chats')
+                        .doc(currentUserUid)
+                        .collection('messages')
+                        .get();
+
+                    for (var doc in querySnapshot.docs) {
+                      await doc.reference.delete();
+                    }
+
+                    // Clear local messages
+                    setState(() {
+                      _messages = [];
+                    });
+                  } catch (e) {
+                    print('Error clearing chat history: $e');
+                  }
+                }
+              },
+            ),
+          ],
           centerTitle: false,
           elevation: 1.0,
         ),
@@ -132,65 +280,67 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                 child: Padding(
                   padding:
                       const EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 6.0, 0.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        // Initial bot message
-                        buildBotWidget(
-                          'Hello, I’m TutorBot! 👋 \nI’m your personal Studying assistant. \nHow can I help you?',
-                        ),
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              // Only show initial bot message if no previous messages exist
+                              if (_messages.isEmpty)
+                                buildBotWidget(
+                                  'Hello, I’m TutorBot! 👋 \nI’m your personal Studying assistant. \nHow can I help you?',
+                                ),
 
-                        // Chat messages
-                        ..._messages.map((message) {
-                          if (message["role"] == "user") {
-                            // User message design
-                            return Align(
-                              alignment: Alignment.centerRight,
-                              child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(vertical: 4.0),
-                                padding: const EdgeInsets.all(12.0),
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                      0xFFFFF9F0), // Yellow container for user messages
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(35.0),
-                                    bottomRight: Radius.circular(0.0),
-                                    topLeft: Radius.circular(35.0),
-                                    topRight: Radius.circular(35.0),
-                                  ),
-                                  border: Border.all(
-                                    color: const Color(
-                                        0xFFECE7DF), // Border for user messages
-                                  ),
-                                ),
-                                child: Text(
-                                  message["message"]!,
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Inter',
-                                        color: Colors.black,
-                                        fontSize: 14.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w500,
-                                        lineHeight: 1.3,
+                              // Chat messages
+                              ..._messages.map((message) {
+                                if (message["role"] == "user") {
+                                  // User message design
+                                  return Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 4.0),
+                                      padding: const EdgeInsets.all(12.0),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                            0xFFFFF9F0), // Yellow container for user messages
+                                        borderRadius: const BorderRadius.only(
+                                          bottomLeft: Radius.circular(35.0),
+                                          bottomRight: Radius.circular(0.0),
+                                          topLeft: Radius.circular(35.0),
+                                          topRight: Radius.circular(35.0),
+                                        ),
+                                        border: Border.all(
+                                          color: const Color(
+                                              0xFFECE7DF), // Border for user messages
+                                        ),
                                       ),
-                                ),
-                              ),
-                            );
-                          } else {
-                            // Bot message - use buildBotWidget for consistent design
-                            return buildBotWidget(message["message"]!);
-                          }
-                        }),
-                        const SizedBox(height: 10)
-                      ]
-                          .divide(const SizedBox(height: 8.0))
-                          .addToStart(const SizedBox(height: 10.0)),
-                    ),
-                  ),
+                                      child: Text(
+                                        message["message"]!,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              fontFamily: 'Inter',
+                                              color: Colors.black,
+                                              fontSize: 14.0,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w500,
+                                              lineHeight: 1.3,
+                                            ),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  // Bot message - use buildBotWidget for consistent design
+                                  return buildBotWidget(message["message"]!);
+                                }
+                              }),
+                            ]
+                                .divide(const SizedBox(height: 8.0))
+                                .addToStart(const SizedBox(height: 10.0)),
+                          ),
+                        ),
                 ),
               ),
               // Input field
@@ -312,7 +462,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
         alignment: Alignment.topLeft,
         children: [
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(40.0, 0.0, 0.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(35.0, 0.0, 0.0, 0.0),
             child: Align(
               alignment: const AlignmentDirectional(-1.0, 0.0),
               child: Container(
