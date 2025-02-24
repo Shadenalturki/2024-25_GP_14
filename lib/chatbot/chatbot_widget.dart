@@ -1,8 +1,13 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'package:flutter/material.dart';
 import 'chatbot_model.dart';
+
 export 'chatbot_model.dart';
 
 class ChatbotWidget extends StatefulWidget {
@@ -14,14 +19,13 @@ class ChatbotWidget extends StatefulWidget {
 
 class _ChatbotWidgetState extends State<ChatbotWidget> {
   late ChatbotModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final List<Map<String, String>> _messages = [];
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ChatbotModel());
-
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
   }
@@ -29,8 +33,33 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  Future<void> _sendMessage(String message) async {
+    setState(() {
+      _messages.add({"role": "user", "message": message});
+    });
+
+    final response = await http.post(
+      Uri.parse('https://f94f-110-39-21-190.ngrok-free.app/chat'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({"question": message}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        _messages.add({"role": "bot", "message": data["answer"]});
+      });
+    } else {
+      setState(() {
+        _messages.add({
+          "role": "bot",
+          "message": "Failed to get a response from the bot."
+        });
+      });
+    }
   }
 
   @override
@@ -101,257 +130,62 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 6.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 6.0, 0.0),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        SizedBox(
-                          height: 179.0,
-                          child: Stack(
-                            children: [
-                              Align(
-                                alignment: const AlignmentDirectional(0.95, 0.97),
-                                child: Container(
-                                  width: 145.0,
-                                  height: 30.0,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF9F0),
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(35.0),
-                                      bottomRight: Radius.circular(0.0),
-                                      topLeft: Radius.circular(35.0),
-                                      topRight: Radius.circular(35.0),
-                                    ),
-                                    border: Border.all(
-                                      color: const Color(0xFFECE7DF),
-                                    ),
-                                  ),
-                                  child: Align(
-                                    alignment: const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      'Explain what is AI ',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Inter',
-                                            color: Colors.black,
-                                            fontSize: 13.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w500,
-                                            lineHeight: 1.3,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Align(
-                                alignment: const AlignmentDirectional(-0.98, -0.98),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: Image.asset(
-                                    'assets/images/chatbot.png',
-                                    width: 35.0,
-                                    height: 35.0,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              Align(
-                                alignment: const AlignmentDirectional(-0.5, 0.13),
-                                child: Container(
-                                  width: 273.0,
-                                  height: 91.0,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE1EEEB),
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(35.0),
-                                      bottomRight: Radius.circular(35.0),
-                                      topLeft: Radius.circular(0.0),
-                                      topRight: Radius.circular(35.0),
-                                    ),
-                                    border: Border.all(
-                                      color: const Color(0xFFD4DFDD),
-                                    ),
-                                  ),
-                                  child: Align(
-                                    alignment: const AlignmentDirectional(0.0, -0.42),
-                                    child: Text(
-                                      'Hello, I’m TutorBot! 👋 \nI’m your personal Stadying assistant. \nHow can I help you?',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Inter',
-                                            color: Colors.black,
-                                            fontSize: 14.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w500,
-                                            lineHeight: 1.3,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                        // Initial bot message
+                        buildBotWidget(
+                          'Hello, I’m TutorBot! 👋 \nI’m your personal Studying assistant. \nHow can I help you?',
                         ),
-                        Align(
-                          alignment: const AlignmentDirectional(0.0, -1.0),
-                          child: SizedBox(
-                            height: 171.0,
-                            child: Stack(
-                              children: [
-                                Align(
-                                  alignment: const AlignmentDirectional(0.95, 1.1),
-                                  child: Container(
-                                    width: 145.0,
-                                    height: 30.0,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFFF9F0),
-                                      borderRadius: const BorderRadius.only(
-                                        bottomLeft: Radius.circular(35.0),
-                                        bottomRight: Radius.circular(0.0),
-                                        topLeft: Radius.circular(35.0),
-                                        topRight: Radius.circular(35.0),
-                                      ),
-                                      border: Border.all(
-                                        color: const Color(0xFFECE7DF),
-                                      ),
-                                    ),
-                                    child: Align(
-                                      alignment: const AlignmentDirectional(0.0, 0.0),
-                                      child: Text(
-                                        'Give me examples ',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Inter',
-                                              color: Colors.black,
-                                              fontSize: 13.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                              lineHeight: 1.3,
-                                            ),
-                                      ),
-                                    ),
+
+                        // Chat messages
+                        ..._messages.map((message) {
+                          if (message["role"] == "user") {
+                            // User message design
+                            return Align(
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 4.0),
+                                padding: const EdgeInsets.all(12.0),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                      0xFFFFF9F0), // Yellow container for user messages
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(35.0),
+                                    bottomRight: Radius.circular(0.0),
+                                    topLeft: Radius.circular(35.0),
+                                    topRight: Radius.circular(35.0),
+                                  ),
+                                  border: Border.all(
+                                    color: const Color(
+                                        0xFFECE7DF), // Border for user messages
                                   ),
                                 ),
-                                Align(
-                                  alignment: const AlignmentDirectional(-0.5, 0.13),
-                                  child: Container(
-                                    width: 273.0,
-                                    height: 103.0,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE1EEEB),
-                                      borderRadius: const BorderRadius.only(
-                                        bottomLeft: Radius.circular(35.0),
-                                        bottomRight: Radius.circular(35.0),
-                                        topLeft: Radius.circular(0.0),
-                                        topRight: Radius.circular(35.0),
+                                child: Text(
+                                  message["message"]!,
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Inter',
+                                        color: Colors.black,
+                                        fontSize: 14.0,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w500,
+                                        lineHeight: 1.3,
                                       ),
-                                      border: Border.all(
-                                        color: const Color(0xFFD4DFDD),
-                                      ),
-                                    ),
-                                    alignment: const AlignmentDirectional(0.0, 0.0),
-                                    child: Align(
-                                      alignment:
-                                          const AlignmentDirectional(0.0, -0.42),
-                                      child: Padding(
-                                        padding: const EdgeInsetsDirectional.fromSTEB(
-                                            9.0, 0.0, 0.0, 0.0),
-                                        child: Text(
-                                          'Artificial Intelligence (AI) is a way of making computers intelligent, making computers capable of doing things that generally require human intelligence',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Inter',
-                                                color: Colors.black,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                                lineHeight: 1.3,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: const AlignmentDirectional(-0.98, -0.98),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.asset(
-                                      'assets/images/chatbot.png',
-                                      width: 35.0,
-                                      height: 35.0,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 155.0,
-                          child: Stack(
-                            children: [
-                              Align(
-                                alignment: const AlignmentDirectional(-0.39, 0.41),
-                                child: Container(
-                                  width: 285.0,
-                                  height: 104.0,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE1EEEB),
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(35.0),
-                                      bottomRight: Radius.circular(35.0),
-                                      topLeft: Radius.circular(0.0),
-                                      topRight: Radius.circular(35.0),
-                                    ),
-                                    border: Border.all(
-                                      color: const Color(0xFFD4DFDD),
-                                    ),
-                                  ),
-                                  alignment: const AlignmentDirectional(0.0, 0.0),
-                                  child: Align(
-                                    alignment: const AlignmentDirectional(0.0, -0.42),
-                                    child: Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          9.0, 0.0, 0.0, 0.0),
-                                      child: Text(
-                                        'Here is some AI examples: Manufacturing robots, Self-driving cars, Smart assistants, Healthcare management, Automated financial investingVirtual travel booking agent.',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Inter',
-                                              color: Colors.black,
-                                              fontSize: 14.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                              lineHeight: 1.3,
-                                            ),
-                                      ),
-                                    ),
-                                  ),
                                 ),
                               ),
-                              Align(
-                                alignment: const AlignmentDirectional(-0.98, -0.98),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: Image.asset(
-                                    'assets/images/chatbot.png',
-                                    width: 35.0,
-                                    height: 35.0,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                            );
+                          } else {
+                            // Bot message - use buildBotWidget for consistent design
+                            return buildBotWidget(message["message"]!);
+                          }
+                        }),
+                        const SizedBox(height: 10)
                       ]
                           .divide(const SizedBox(height: 8.0))
                           .addToStart(const SizedBox(height: 10.0)),
@@ -359,6 +193,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                   ),
                 ),
               ),
+              // Input field
               Align(
                 alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Container(
@@ -376,76 +211,70 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Align(
-                        alignment: const AlignmentDirectional(-1.0, -1.0),
-                        child: SizedBox(
-                          width: 300.0,
-                          child: TextFormField(
-                            controller: _model.textController,
-                            focusNode: _model.textFieldFocusNode,
-                            autofocus: false,
-                            obscureText: false,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelStyle: FlutterFlowTheme.of(context)
-                                  .labelMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    color: const Color(0xFF070707),
-                                    letterSpacing: 0.0,
-                                  ),
-                              hintText: 'Type a message...',
-                              hintStyle: FlutterFlowTheme.of(context)
-                                  .labelMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    color: const Color(0xFF727171),
-                                    letterSpacing: 0.0,
-                                  ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Color(0x00000000),
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Color(0x00000000),
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: FlutterFlowTheme.of(context).error,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: FlutterFlowTheme.of(context).error,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
-                              filled: true,
-                              fillColor: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
+                      Expanded(
+                        child: TextFormField(
+                          controller: _model.textController,
+                          focusNode: _model.textFieldFocusNode,
+                          autofocus: false,
+                          obscureText: false,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            labelStyle: FlutterFlowTheme.of(context)
+                                .labelMedium
                                 .override(
                                   fontFamily: 'Inter',
-                                  color: Colors.black,
+                                  color: const Color(0xFF070707),
                                   letterSpacing: 0.0,
                                 ),
-                            cursorColor:
-                                FlutterFlowTheme.of(context).primaryText,
-                            validator: _model.textControllerValidator
-                                .asValidator(context),
+                            hintText: 'Type a message...',
+                            hintStyle: FlutterFlowTheme.of(context)
+                                .labelMedium
+                                .override(
+                                  fontFamily: 'Inter',
+                                  color: const Color(0xFF727171),
+                                  letterSpacing: 0.0,
+                                ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0x00000000),
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0x00000000),
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).error,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).error,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            filled: true,
+                            fillColor: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
                           ),
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'Inter',
+                                    color: Colors.black,
+                                    letterSpacing: 0.0,
+                                  ),
+                          cursorColor: FlutterFlowTheme.of(context).primaryText,
+                          validator: _model.textControllerValidator
+                              .asValidator(context),
                         ),
                       ),
                       FlutterFlowIconButton(
@@ -458,8 +287,11 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                           color: Color(0xFF6B6A6A),
                           size: 24.0,
                         ),
-                        onPressed: () {
-                          print('IconButton pressed ...');
+                        onPressed: () async {
+                          if (_model.textController.text.isNotEmpty) {
+                            await _sendMessage(_model.textController.text);
+                            _model.textController!.clear();
+                          }
                         },
                       ),
                     ],
@@ -469,6 +301,63 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildBotWidget(String message) {
+    return SizedBox(
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.topLeft,
+        children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(40.0, 0.0, 0.0, 0.0),
+            child: Align(
+              alignment: const AlignmentDirectional(-1.0, 0.0),
+              child: Container(
+                constraints: const BoxConstraints(
+                  maxWidth: 273.0,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE1EEEB),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(35.0),
+                    bottomRight: Radius.circular(35.0),
+                    topLeft: Radius.circular(0.0),
+                    topRight: Radius.circular(35.0),
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFFD4DFDD),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text(
+                    message,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'Inter',
+                          color: Colors.black,
+                          fontSize: 14.0,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w500,
+                          lineHeight: 1.3,
+                        ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.asset(
+              'assets/images/chatbot.png',
+              width: 35.0,
+              height: 35.0,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ],
       ),
     );
   }

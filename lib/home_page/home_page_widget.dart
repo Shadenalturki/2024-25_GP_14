@@ -642,11 +642,11 @@ Future<void> _saveSummaryToFirebase(
     if (result != null) {
       File file = File(result.files.single.path!);
 
-      final uploadUrl = Uri.parse('https://summarize.ngrok-free.app/upload');
+      final uploadUrl = Uri.parse('https://f94f-110-39-21-190.ngrok-free.app/upload');
       final summarizeUrl =
-          Uri.parse('https://summarize.ngrok-free.app/summarize');
+          Uri.parse('https://f94f-110-39-21-190.ngrok-free.app/summarize');
       final quizUrl =
-          Uri.parse('https://summarize.ngrok-free.app/generate_quiz_all');
+          Uri.parse('https://f94f-110-39-21-190.ngrok-free.app/generate_quiz_all');
       final uploadRequest = http.MultipartRequest('POST', uploadUrl);
       uploadRequest.files
           .add(await http.MultipartFile.fromPath('file', file.path));
