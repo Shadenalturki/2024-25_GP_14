@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart' as painting;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http; // Add this line for HTTP requests
 import 'package:summ_a_ize/flutter_flow/flutter_flow_widgets.dart';
@@ -77,7 +78,9 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     }
 
     // Fetch translation only if it's not already loaded
+
     const apiUrl = 'https://summarize.ngrok-free.app/translate';
+
     setState(() {
       isTranslating = true; // Set translating state to true
     });
@@ -112,6 +115,12 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
         isTranslating = false;
       });
     }
+  }
+
+  bool _isArabic(String text) {
+    // Regular expression to match Arabic characters
+    final arabicRegex = RegExp(r'[\u0600-\u06FF]');
+    return arabicRegex.hasMatch(text);
   }
 
   bool showCorrectAnswers = false;
@@ -295,10 +304,21 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                 )
                                               : Text(
                                                   showTranslated
-                                                      ? translatedSummary! ??
+
+                                                      ? translatedSummary ??
                                                           "Translation error"
                                                       : widget.summary,
                                                   textAlign: TextAlign.start,
+                                                  textDirection: _isArabic(
+                                                          showTranslated
+                                                              ? translatedSummary ??
+                                                                  ""
+                                                              : widget.summary)
+                                                      ? painting
+                                                          .TextDirection.rtl
+                                                      : painting
+                                                          .TextDirection.ltr,
+                                                
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
