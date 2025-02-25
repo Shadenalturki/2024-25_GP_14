@@ -27,6 +27,7 @@ class SummaryQuizWidget extends StatefulWidget {
   State<SummaryQuizWidget> createState() => _SummaryQuizWidgetState();
 }
 
+
 class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   late SummaryQuizModel _model;
   String? translatedSummary; // Add this local variable
@@ -77,7 +78,9 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
     }
 
     // Fetch translation only if it's not already loaded
-    const apiUrl = 'https://0a9d4a89058b.ngrok.app';
+
+    const apiUrl = 'https://summarize.ngrok-free.app/translate';
+
     setState(() {
       isTranslating = true; // Set translating state to true
     });
@@ -301,6 +304,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                 )
                                               : Text(
                                                   showTranslated
+
                                                       ? translatedSummary ??
                                                           "Translation error"
                                                       : widget.summary,
@@ -314,6 +318,7 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                           .TextDirection.rtl
                                                       : painting
                                                           .TextDirection.ltr,
+                                                
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
