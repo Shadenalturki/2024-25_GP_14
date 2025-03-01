@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:summ_a_ize/quiz/quiz_widget.dart';
+import 'package:summ_a_ize/backend/constants.dart';
 import 'package:summ_a_ize/summary_quiz/summary_quiz_widget.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
@@ -67,43 +67,40 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   /// Save summary to Firebase
-Future<void> _saveSummaryToFirebase(
-    String courseId, String summary, String topicName, List<dynamic> quizData) async {
-  try {
-    final newDocRef = FirebaseFirestore.instance
-        .collection('courses')
-        .doc(courseId)
-        .collection('summaries')
-        .doc();
+  Future<void> _saveSummaryToFirebase(String courseId, String summary,
+      String topicName, List<dynamic> quizData) async {
+    try {
+      final newDocRef = FirebaseFirestore.instance
+          .collection('courses')
+          .doc(courseId)
+          .collection('summaries')
+          .doc();
 
-    await newDocRef.set({
-      'summaryId': newDocRef.id,
-      'summary': summary,
-      'topicName': topicName,
-      'quizData': quizData,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      await newDocRef.set({
+        'summaryId': newDocRef.id,
+        'summary': summary,
+        'topicName': topicName,
+        'quizData': quizData,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-    print("✅ Summary saved for courseId: $courseId, topic: $topicName");
+      print("✅ Summary saved for courseId: $courseId, topic: $topicName");
 
-    // ✅ Debug Firestore write for topics
-    final topicRef = await FirebaseFirestore.instance
-        .collection('courses')
-        .doc(courseId)
-        .collection('topics')
-        .add({
-      'topicName': topicName,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      // ✅ Debug Firestore write for topics
+      final topicRef = await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(courseId)
+          .collection('topics')
+          .add({
+        'topicName': topicName,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-    print("✅ Topic saved in Firestore with ID: ${topicRef.id}");
-
-  } catch (e) {
-    print("❌ Error saving summary and topic: $e");
+      print("✅ Topic saved in Firestore with ID: ${topicRef.id}");
+    } catch (e) {
+      print("❌ Error saving summary and topic: $e");
+    }
   }
-}
-
-
 
   Future<void> _saveExtractedMaterialToFirebase(
       String courseId, String extractedText) async {
@@ -642,14 +639,13 @@ Future<void> _saveSummaryToFirebase(
     if (result != null) {
       File file = File(result.files.single.path!);
 
-      final uploadUrl = Uri.parse('https://0a9d4a89058b.ngrok.app/upload');
-      final summarizeUrl =
-          Uri.parse('https://0a9d4a89058b.ngrok.app/summarize');
-      final quizUrl =
-          Uri.parse('https://0a9d4a89058b.ngrok.app/generate_quiz_all');
+      final uploadUrl = Uri.parse('${ApiConstant.baseUrl}upload');
+      print('Upload URL: $uploadUrl');
+      final summarizeUrl = Uri.parse('${ApiConstant.baseUrl}summarize');
+      final quizUrl = Uri.parse('${ApiConstant.baseUrl}generate_quiz_all');
       final uploadRequest = http.MultipartRequest('POST', uploadUrl);
       uploadRequest.files
-          .add(await http.MultipartFile.fromPath('file', file.path));
+          .add(await http.MultipartFile.fromPath('files', file.path));
 
       // Show a loading pop-up for file upload
       showDialog(
@@ -676,11 +672,14 @@ Future<void> _saveSummaryToFirebase(
         Navigator.pop(context);
 
         if (uploadResponse.statusCode == 200) {
+          print('File uploaded successfully...........');
           final responseBody = await uploadResponse.stream.bytesToString();
           final jsonResponse = jsonDecode(responseBody);
 
           if (jsonResponse.containsKey('extracted_text')) {
             final extractedText = jsonResponse['extracted_text'];
+            final sessionPdfId = jsonResponse['session'];
+            print("Session PDF ID: $sessionPdfId");
 
             // Save the extracted text to Firestore
             await _saveExtractedMaterialToFirebase(courseId, extractedText);
@@ -781,13 +780,15 @@ Future<void> _saveSummaryToFirebase(
                     courseId, formattedSummary, topicName, quizData);
 
                 // Navigate to the summary screen with formatted text
+                print("sessionPdfId during navigatio: $sessionPdfId");
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => SummaryQuizWidget(
                         summary: formattedSummary,
                         topicName: topicName,
-                        quizData: quizData),
+                        quizData: quizData,
+                        sessionPdfId: sessionPdfId),
                   ),
                 );
               } else {
@@ -1251,18 +1252,24 @@ Future<void> _saveSummaryToFirebase(
                                   ),
                                   FFButtonWidget(
                                     onPressed: () async {
-  final courseId = course['courseId']; // Retrieve courseId
-  if (courseId != null) {
-    context.pushNamed(
-      'history',
-      queryParameters: {'courseId': courseId}, // Pass courseId as a query parameter
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error: Course ID not found')),
-    );
-  }
-},
+                                      final courseId = course[
+                                          'courseId']; // Retrieve courseId
+                                      if (courseId != null) {
+                                        context.pushNamed(
+                                          'history',
+                                          queryParameters: {
+                                            'courseId': courseId
+                                          }, // Pass courseId as a query parameter
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Error: Course ID not found')),
+                                        );
+                                      }
+                                    },
                                     text: 'History',
                                     icon: const Icon(Icons.history),
                                     options: FFButtonOptions(

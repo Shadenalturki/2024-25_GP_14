@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/base_auth_user_provider.dart';
-
+import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/main.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 
 export 'package:go_router/go_router.dart';
+
 export 'serialization_util.dart';
 
 const kTransitionInfoKey = '__transition_info__';
@@ -93,17 +93,18 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: '/signUp',
           builder: (context, params) => const SignUpWidget(),
         ),
-      FFRoute(
-  name: 'summaryQuiz',
-  path: '/summaryQuiz',
-  builder: (context, params) => SummaryQuizWidget(
-    summary: params.getParam('summary', ParamType.String) ?? 'Default Summary',
-    topicName: params.getParam('topicName', ParamType.String) ?? 'Default Topic',
-    quizData: jsonDecode(params.getParam('quizData', ParamType.String) ?? '[]'),
-  ),
-),
-
-
+        FFRoute(
+          name: 'summaryQuiz',
+          path: '/summaryQuiz',
+          builder: (context, params) => SummaryQuizWidget(
+            summary: params.getParam('summary', ParamType.String) ??
+                'Default Summary',
+            topicName: params.getParam('topicName', ParamType.String) ??
+                'Default Topic',
+            quizData: jsonDecode(
+                params.getParam('quizData', ParamType.String) ?? '[]'),
+          ),
+        ),
         FFRoute(
           name: 'chatbot',
           path: '/chatbot',
@@ -124,29 +125,28 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'Quiz',
           path: '/quiz',
-          builder: (context, params) =>  QuizWidget(
-            quizData: [],
-            topicName: params.getParam('topicName', ParamType.String)??
+          builder: (context, params) => QuizWidget(
+            quizData: const [],
+            topicName: params.getParam('topicName', ParamType.String) ??
                 'Default Topic',
           ),
         ),
         FFRoute(
-  name: 'history',
-  path: '/history',
-  builder: (context, params) {
-    final courseId = params.getParam('courseId', ParamType.String);
+          name: 'history',
+          path: '/history',
+          builder: (context, params) {
+            final courseId = params.getParam('courseId', ParamType.String);
 
-    if (courseId == null || courseId.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: const Center(child: Text('Error: Course ID is missing')),
-      );
-    }
+            if (courseId == null || courseId.isEmpty) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Error')),
+                body: const Center(child: Text('Error: Course ID is missing')),
+              );
+            }
 
-    return HistoryWidget(courseId: courseId);
-  },
-),
-
+            return HistoryWidget(courseId: courseId);
+          },
+        ),
         FFRoute(
           name: 'calendar',
           path: '/calendar',

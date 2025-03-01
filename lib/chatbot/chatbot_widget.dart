@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:summ_a_ize/auth/firebase_auth/auth_util.dart';
+import 'package:summ_a_ize/backend/constants.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -13,7 +14,8 @@ import 'chatbot_model.dart';
 export 'chatbot_model.dart';
 
 class ChatbotWidget extends StatefulWidget {
-  const ChatbotWidget({super.key});
+  final String? sessionPdfId;
+  const ChatbotWidget({super.key, this.sessionPdfId});
 
   @override
   State<ChatbotWidget> createState() => _ChatbotWidgetState();
@@ -121,12 +123,14 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
 
     // Save user message to Firestore
     await _saveMessageToFirestore("user", message);
+    print("widget.sessionPdfId: ${widget.sessionPdfId}");
 
     // Send message to API
     final response = await http.post(
-      Uri.parse('https://0a9d4a89058b.ngrok.app/chat'),
+      Uri.parse('${ApiConstant.baseUrl}/chat'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({"question": message}),
+      body:
+          json.encode({"question": message, "session_id": widget.sessionPdfId}),
     );
 
     if (response.statusCode == 200) {

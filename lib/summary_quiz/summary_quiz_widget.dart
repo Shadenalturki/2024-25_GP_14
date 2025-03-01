@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart' as painting;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http; // Add this line for HTTP requests
+import 'package:summ_a_ize/chatbot/chatbot_widget.dart';
 import 'package:summ_a_ize/flutter_flow/flutter_flow_widgets.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -15,18 +16,19 @@ class SummaryQuizWidget extends StatefulWidget {
   final String summary;
   final String topicName;
   final List quizData;
+  final String? sessionPdfId;
 
   const SummaryQuizWidget({
     required this.summary,
     required this.topicName,
     required this.quizData,
+    this.sessionPdfId,
     super.key,
   });
 
   @override
   State<SummaryQuizWidget> createState() => _SummaryQuizWidgetState();
 }
-
 
 class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
   late SummaryQuizModel _model;
@@ -140,7 +142,12 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
         backgroundColor: const Color(0xFFFAFAFC),
         floatingActionButton: InkWell(
           onTap: () async {
-            context.pushNamed('chatbot');
+            // context.pushNamed('chatbot');
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return ChatbotWidget(
+                sessionPdfId: widget.sessionPdfId,
+              );
+            }));
           },
           child: Container(
             width: 90.0,
@@ -304,7 +311,6 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                 )
                                               : Text(
                                                   showTranslated
-
                                                       ? translatedSummary ??
                                                           "Translation error"
                                                       : widget.summary,
@@ -318,7 +324,6 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                           .TextDirection.rtl
                                                       : painting
                                                           .TextDirection.ltr,
-                                                
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
