@@ -444,6 +444,12 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                               .toLowerCase()
                                               .trim();
 
+                                          // Get the selected answer for this question (if any)
+                                          final selectedAnswer =
+                                              selectedAnswers.length > index
+                                                  ? selectedAnswers[index]
+                                                  : null;
+
                                           return Padding(
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 8.0,
@@ -471,11 +477,17 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                       CrossAxisAlignment.start,
                                                   children: options.entries
                                                       .map((entry) {
-                                                    // Check if this option is the correct answer
+                                                    // Check if this option is the correct answer.
                                                     bool isCorrectAnswer = entry
                                                             .key
                                                             .toLowerCase() ==
                                                         correctAnswer;
+                                                    // Check if this option is the one selected by the user.
+                                                    bool isSelected =
+                                                        selectedAnswer
+                                                                ?.toLowerCase() ==
+                                                            entry.key
+                                                                .toLowerCase();
 
                                                     return Padding(
                                                       padding:
@@ -488,12 +500,8 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                         children: [
                                                           Radio<String>(
                                                             value: entry.key,
-                                                            groupValue: selectedAnswers
-                                                                        .length >
-                                                                    index
-                                                                ? selectedAnswers[
-                                                                    index]
-                                                                : null,
+                                                            groupValue:
+                                                                selectedAnswer,
                                                             onChanged:
                                                                 showCorrectAnswers
                                                                     ? null
@@ -521,12 +529,14 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
                                                                         'DM Sans',
                                                                     fontSize:
                                                                         14.0,
-                                                                    color: showCorrectAnswers &&
-                                                                            isCorrectAnswer
-                                                                        ? Colors
-                                                                            .green
-                                                                        : Colors
-                                                                            .black,
+                                                                    color: showCorrectAnswers
+                                                                        ? (isCorrectAnswer
+                                                                            ? Colors
+                                                                                .green
+                                                                            : (isSelected
+                                                                                ? Colors.red
+                                                                                : Colors.black))
+                                                                        : Colors.black,
                                                                     fontWeight: showCorrectAnswers &&
                                                                             isCorrectAnswer
                                                                         ? FontWeight
