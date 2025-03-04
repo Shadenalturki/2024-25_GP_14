@@ -26,9 +26,10 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   List<Map<String, String>> _messages = [];
   bool _isLoading = true;
+  bool _isBotTyping = false;
 
-  // Get current user UID
-  // String get currentUserUid => currentUser?.uid ?? '';
+  // Add a ScrollController
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -44,7 +45,20 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   @override
   void dispose() {
     _model.dispose();
+    _scrollController.dispose(); // Dispose the ScrollController
     super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   // Load previous chat messages from Firestore
@@ -78,6 +92,9 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
             _messages = loadedMessages;
             _isLoading = false;
           });
+
+          // Scroll to bottom after loading previous messages
+          _scrollToBottom();
         } else {
           setState(() {
             _isLoading = false;
@@ -119,7 +136,11 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
     // Add user message to local state
     setState(() {
       _messages.add({"role": "user", "message": message});
+      _isBotTyping = true; // Start loading animation
     });
+
+    // Scroll to bottom after adding the user's message
+    _scrollToBottom();
 
     // Save user message to Firestore
     await _saveMessageToFirestore("user", message);
@@ -140,7 +161,11 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
       // Add bot response to local state
       setState(() {
         _messages.add({"role": "bot", "message": botResponse});
+        _isBotTyping = false; // Stop loading animation
       });
+
+      // Scroll to bottom after adding the bot's response
+      _scrollToBottom();
 
       // Save bot response to Firestore
       await _saveMessageToFirestore("bot", botResponse);
@@ -150,11 +175,154 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
       // Add error message to local state
       setState(() {
         _messages.add({"role": "bot", "message": errorMessage});
+        _isBotTyping = false; // Stop loading animation
       });
+
+      // Scroll to bottom after adding the error message
+      _scrollToBottom();
 
       // Save error message to Firestore
       await _saveMessageToFirestore("bot", errorMessage);
     }
+  }
+
+  Widget buildTypingIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Stack(
+          alignment: Alignment.topLeft,
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(35.0, 0.0, 0.0, 0.0),
+              child: Align(
+                alignment: const AlignmentDirectional(-0.9, 0.0),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 273.0),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE1EEEB),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(35.0),
+                      bottomRight: Radius.circular(35.0),
+                      topLeft: Radius.circular(0.0),
+                      topRight: Radius.circular(35.0),
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFFD4DFDD),
+                    ),
+                  ),
+                  // Updated padding around the three dots
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 12.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TweenAnimationBuilder(
+                          tween: Tween<double>(begin: 0, end: 1),
+                          duration: const Duration(milliseconds: 600),
+                          builder: (context, value, child) {
+                            return Opacity(
+                              opacity: value,
+                              child: child,
+                            );
+                          },
+                          child: Container(
+                            width: 8.0,
+                            height: 8.0,
+                            margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                            decoration: const BoxDecoration(
+                              color: Colors.grey,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                        TweenAnimationBuilder(
+                          tween: Tween<double>(begin: 0, end: 1),
+                          duration: const Duration(milliseconds: 600),
+                          builder: (context, value, child) {
+                            return Opacity(
+                              opacity: value,
+                              child: child,
+                            );
+                          },
+                          child: Container(
+                            width: 8.0,
+                            height: 8.0,
+                            margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                            decoration: const BoxDecoration(
+                              color: Colors.grey,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                        TweenAnimationBuilder(
+                          tween: Tween<double>(begin: 0, end: 1),
+                          duration: const Duration(milliseconds: 600),
+                          builder: (context, value, child) {
+                            return Opacity(
+                              opacity: value,
+                              child: child,
+                            );
+                          },
+                          child: Container(
+                            width: 8.0,
+                            height: 8.0,
+                            margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                            decoration: const BoxDecoration(
+                              color: Colors.grey,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.asset(
+                'assets/images/chatbot.png',
+                width: 35.0,
+                height: 35.0,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  List<TextSpan> _parseText(String message, BuildContext context) {
+    final RegExp regExp = RegExp(r'\*\*(.*?)\*\*');
+    List<TextSpan> spans = [];
+    int start = 0;
+
+    // Find all matches for text between **
+    for (final match in regExp.allMatches(message)) {
+      // Add text before the bold part
+      if (match.start > start) {
+        spans.add(TextSpan(text: message.substring(start, match.start)));
+      }
+      // The text between the ** markers
+      final boldText = match.group(1);
+      spans.add(
+        TextSpan(
+          text: boldText,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      );
+      start = match.end;
+    }
+    // Add remaining text after the last match
+    if (start < message.length) {
+      spans.add(TextSpan(text: message.substring(start)));
+    }
+    return spans;
   }
 
   @override
@@ -283,10 +451,12 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
               Expanded(
                 child: Padding(
                   padding:
-                      const EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 6.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 6.0, 10.0),
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : SingleChildScrollView(
+                          controller:
+                              _scrollController, // Attach the ScrollController
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             children: [
@@ -307,8 +477,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                                           vertical: 4.0),
                                       padding: const EdgeInsets.all(12.0),
                                       decoration: BoxDecoration(
-                                        color: const Color(
-                                            0xFFFFF9F0), // Yellow container for user messages
+                                        color: const Color(0xFFFFF9F0),
                                         borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(35.0),
                                           bottomRight: Radius.circular(0.0),
@@ -316,8 +485,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                                           topRight: Radius.circular(35.0),
                                         ),
                                         border: Border.all(
-                                          color: const Color(
-                                              0xFFECE7DF), // Border for user messages
+                                          color: const Color(0xFFECE7DF),
                                         ),
                                       ),
                                       child: Text(
@@ -340,6 +508,9 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                                   return buildBotWidget(message["message"]!);
                                 }
                               }),
+
+                              // Show typing indicator if bot is typing
+                              if (_isBotTyping) buildTypingIndicator(),
                             ]
                                 .divide(const SizedBox(height: 8.0))
                                 .addToStart(const SizedBox(height: 10.0)),
@@ -347,7 +518,6 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                         ),
                 ),
               ),
-              // Input field
               Align(
                 alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Container(
@@ -468,7 +638,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(35.0, 0.0, 0.0, 0.0),
             child: Align(
-              alignment: const AlignmentDirectional(-1.0, 0.0),
+              alignment: const AlignmentDirectional(-0.9, 0.0),
               child: Container(
                 constraints: const BoxConstraints(
                   maxWidth: 273.0,
@@ -487,16 +657,18 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: Text(
-                    message,
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          fontFamily: 'Inter',
-                          color: Colors.black,
-                          fontSize: 14.0,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w500,
-                          lineHeight: 1.3,
-                        ),
+                  child: RichText(
+                    text: TextSpan(
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'Inter',
+                            color: Colors.black,
+                            fontSize: 14.0,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.w500,
+                            lineHeight: 1.3,
+                          ),
+                      children: _parseText(message, context),
+                    ),
                   ),
                 ),
               ),
