@@ -638,6 +638,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
     if (result != null) {
       File file = File(result.files.single.path!);
+      String fileNameWithExtension = file.path.split('/').last;
+      String fileNameWithoutExtension = fileNameWithExtension.split('.').first;
+      print('Selected file: $fileNameWithoutExtension');
 
       final uploadUrl = Uri.parse('${ApiConstant.baseUrl}upload');
       print('Upload URL: $uploadUrl');
@@ -786,7 +789,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   MaterialPageRoute(
                     builder: (context) => SummaryQuizWidget(
                         summary: formattedSummary,
-                        topicName: topicName,
+                        topicName: fileNameWithoutExtension,
                         quizData: quizData,
                         sessionPdfId: sessionPdfId),
                   ),
