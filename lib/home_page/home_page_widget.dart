@@ -789,7 +789,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   MaterialPageRoute(
                     builder: (context) => SummaryQuizWidget(
                         summary: formattedSummary,
-                        topicName: fileNameWithoutExtension,
+                        topicName: topicName, //fileNameWithoutExtension,
                         quizData: quizData,
                         sessionPdfId: sessionPdfId),
                   ),
