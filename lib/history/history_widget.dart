@@ -1,13 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
+import 'package:summ_a_ize/summary_quiz/summary_quiz_widget.dart';
+
 import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 class HistoryWidget extends StatefulWidget {
   final String courseId;
 
-  const HistoryWidget({Key? key, required this.courseId}) : super(key: key);
+  const HistoryWidget({super.key, required this.courseId});
 
   @override
   State<HistoryWidget> createState() => _HistoryWidgetState();
@@ -30,17 +32,30 @@ class _HistoryWidgetState extends State<HistoryWidget> {
         final summary = summaryData['summary'] ?? 'No summary available';
         final quizData = summaryData['quizData'] ?? [];
 
+        print("Quiz Data:----1       $quizData");
+
         // Navigate to SummaryQuizWidget with fetched data
-        context.pushNamed(
-          'summaryQuiz',
-          queryParameters: {
-            'summary': summary,
-            'topicName': topicName,
-          },
-          extra: {
-            'quizData': quizData,
-          },
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SummaryQuizWidget(
+              summary: summary,
+              topicName: topicName,
+              quizData: quizData,
+            ),
+          ),
         );
+
+        // context.pushNamed(
+        //   'summaryQuiz',
+        //   queryParameters: {
+        //     'summary': summary,
+        //     'topicName': topicName,
+        //   },
+        //   extra: {
+        //     'quizData': quizData,
+        //   },
+        // );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No summary found for this topic.')),
@@ -101,7 +116,8 @@ class _HistoryWidgetState extends State<HistoryWidget> {
               final topicName = topicData['topicName'];
 
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 child: Material(
                   elevation: 5,
                   borderRadius: BorderRadius.circular(20),
@@ -118,9 +134,7 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Text(
                         topicName,
-                        style: FlutterFlowTheme.of(context)
-                            .bodyMedium
-                            .override(
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
                               fontFamily: 'Inter',
                               color: Colors.black,
                               fontSize: 25,
