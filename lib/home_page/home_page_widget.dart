@@ -585,45 +585,57 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       },
     );
   }
+String _normalize(String input) {
+  return input
+      .toLowerCase()
+      .replaceAll(RegExp(r'\s+'), '') // removes all spaces
+      .trim();
+}
 
   Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
-    // Query Firestore to see if the topic name already exists for this course
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('courses')
-        .doc(courseId)
-        .collection('summaries')
-        .where('topicName', isEqualTo: topicName)
-        .get();
+  final normalizedInput = _normalize(topicName);
 
-    if (querySnapshot.docs.isEmpty) {
-      // If topic name doesn't exist, proceed with the upload
-      _uploadFile(courseId, topicName);
-    } else {
-      // If topic name exists, show an error
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Error"),
-            content: const Text(
-                "This topic name already exists for this course. Please choose a different name."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the error dialog
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(
-                      0xFF4A4A4A), // Set color for "OK" button in error dialog
-                ),
-                child: const Text('OK'),
+  // Fetch all existing topic names for this course
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('courses')
+      .doc(courseId)
+      .collection('topics')
+      .get();
+
+  final existingNames = querySnapshot.docs
+      .map((doc) => _normalize(doc['topicName']))
+      .toList();
+
+  if (existingNames.contains(normalizedInput)) {
+    // Show error if normalized name already exists
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Error"),
+          content: const Text(
+              "This topic name already exists for this course. Please choose a different name."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF4A4A4A),
               ),
-            ],
-          );
-        },
-      );
-    }
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+    return;
   }
+
+  // Proceed if no duplicates found
+  _uploadFile(courseId, topicName);
+}
+
 
   late List quizData = [];
   Future<void> _uploadFile(String courseId, String topicName) async {

@@ -79,6 +79,13 @@ Future<void> _deleteTopic(String topicId) async {
   }
 }
 
+String _normalize(String input) {
+  return input
+      .toLowerCase()
+      .replaceAll(RegExp(r'\s+'), '') // remove ALL spaces
+      .trim();
+}
+
 
 
 Future<void> _editTopic(BuildContext context, String topicId, String currentName) async {
@@ -86,62 +93,112 @@ Future<void> _editTopic(BuildContext context, String topicId, String currentName
 
   await showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (context) {
-      return AlertDialog(
-        title: const Text('Edit Topic'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Enter new topic name'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final newName = controller.text.trim();
-              if (newName.isNotEmpty) {
-                try {
-                  // 1. Update the topic name in topics collection
-                  await FirebaseFirestore.instance
-                      .collection('courses')
-                      .doc(widget.courseId)
-                      .collection('topics')
-                      .doc(topicId)
-                      .update({'topicName': newName});
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Edit Topic'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(hintText: 'Enter new topic name'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final rawInput = controller.text.trim();
+                  final newName = rawInput;
+                  final normalizedNewName = _normalize(rawInput);
 
-                  // 2. Update it in the summaries collection as well
-                  final summaries = await FirebaseFirestore.instance
-                      .collection('courses')
-                      .doc(widget.courseId)
-                      .collection('summaries')
-                      .where('topicName', isEqualTo: currentName)
-                      .get();
+                  if (normalizedNewName.isEmpty) return;
 
-                  for (var doc in summaries.docs) {
-                    await doc.reference.update({'topicName': newName});
+                  try {
+                    // 1. Get all existing topic names for this course except the one being edited
+                    final topicsSnapshot = await FirebaseFirestore.instance
+                        .collection('courses')
+                        .doc(widget.courseId)
+                        .collection('topics')
+                        .get();
+
+                    final existingNames = topicsSnapshot.docs
+                        .where((doc) => doc.id != topicId)
+                        .map((doc) => _normalize(doc.data()['topicName'] as String))
+                        .toList();
+
+                    // 2. Check for duplicates (ignore case & spaces)
+                    if (existingNames.contains(normalizedNewName)) {
+                      await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text(
+                            'This topic name already exists for this course. Please choose a different name.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                      return;
+                    }
+
+                    // 3. Update topic name in 'topics'
+                    await FirebaseFirestore.instance
+                        .collection('courses')
+                        .doc(widget.courseId)
+                        .collection('topics')
+                        .doc(topicId)
+                        .update({'topicName': newName});
+
+                    // 4. Update topic name in 'summaries'
+                    final summaries = await FirebaseFirestore.instance
+                        .collection('courses')
+                        .doc(widget.courseId)
+                        .collection('summaries')
+                        .where('topicName', isEqualTo: currentName)
+                        .get();
+
+                    for (var doc in summaries.docs) {
+                      await doc.reference.update({'topicName': newName});
+                    }
+
+                    Navigator.pop(context); // close the edit dialog
+                  } catch (e) {
+                    print('❌ Error updating topic: $e');
+                    Navigator.pop(context); // close the edit dialog
+                    await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Error'),
+                        content: const Text('Failed to update topic.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
                   }
-
-                  Navigator.pop(context);
-
-                
-                } catch (e) {
-                  print('❌ Error updating topic: $e');
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Failed to update topic.')),
-                  );
-                }
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
       );
     },
   );
 }
+
+
 
 
   Future<void> _navigateToSummaryQuiz(String topicName) async {
