@@ -14,8 +14,12 @@ import 'chatbot_model.dart';
 export 'chatbot_model.dart';
 
 class ChatbotWidget extends StatefulWidget {
-  final String? sessionPdfId;
-  const ChatbotWidget({super.key, this.sessionPdfId});
+final String? topicId;
+final String? sessionPdfId;
+
+
+const ChatbotWidget({super.key, required this.sessionPdfId, required this.topicId});
+
 
   @override
   State<ChatbotWidget> createState() => _ChatbotWidgetState();
@@ -34,6 +38,8 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   @override
   void initState() {
     super.initState();
+      print("🧠 Chatbot INIT with topicId: ${widget.topicId}");
+
     _model = createModel(context, () => ChatbotModel());
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
@@ -69,11 +75,16 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
 
     try {
       if (currentUserUid.isNotEmpty) {
-        final chatRef = FirebaseFirestore.instance
-            .collection('chats')
-            .doc(currentUserUid)
-            .collection('messages')
-            .orderBy('timestamp', descending: false);
+   final chatRef = FirebaseFirestore.instance
+    .collection('chats')
+    .doc(currentUserUid)
+    .collection('topics')
+    .doc(widget.topicId)
+    .collection('messages').where('timestamp', isGreaterThan: Timestamp(0, 0)) 
+    .orderBy('timestamp', descending: false);
+
+
+
 
         final chatSnapshot = await chatRef.get();
 
@@ -81,12 +92,16 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
           List<Map<String, String>> loadedMessages = [];
 
           for (var doc in chatSnapshot.docs) {
-            final data = doc.data();
-            loadedMessages.add({
-              "role": data['role'] as String,
-              "message": data['message'] as String,
-            });
-          }
+  final data = doc.data();
+
+  if (data['role'] != null && data['message'] != null) {
+    loadedMessages.add({
+      "role": data['role'],
+      "message": data['message'],
+    });
+  }
+}
+
 
           setState(() {
             _messages = loadedMessages;
@@ -117,19 +132,28 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   Future<void> _saveMessageToFirestore(String role, String message) async {
     if (currentUserUid.isEmpty) return;
 
-    try {
-      await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(currentUserUid)
-          .collection('messages')
-          .add({
-        'role': role,
-        'message': message,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      print('Error saving message to Firestore: $e');
-    }
+try {
+    // 🔧 Save the document and capture its reference
+    final docRef = await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(currentUserUid)
+        .collection('topics')
+        .doc(widget.topicId)
+        .collection('messages')
+        .add({
+      'role': role,
+      'message': message,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // ✅ Now we can safely get the document to inspect it
+   await Future.delayed(Duration(seconds: 1)); // wait a bit
+final savedDoc = await docRef.get();
+print("🔥 Saved Message Timestamp: ${savedDoc['timestamp']}");
+
+  } catch (e) {
+    print('Error saving message to Firestore: $e');
+  }
   }
 
   Future<void> _sendMessage(String message) async {
@@ -419,15 +443,19 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
                 if (shouldClear == true && currentUserUid.isNotEmpty) {
                   try {
                     // Delete all messages from Firestore
-                    final querySnapshot = await FirebaseFirestore.instance
-                        .collection('chats')
-                        .doc(currentUserUid)
-                        .collection('messages')
-                        .get();
+              final querySnapshot = await FirebaseFirestore.instance
+  .collection('chats')
+  .doc(currentUserUid)
+  .collection('topics')
+  .doc(widget.topicId)
+  .collection('messages')
+  .get();
 
-                    for (var doc in querySnapshot.docs) {
-                      await doc.reference.delete();
-                    }
+
+for (var doc in querySnapshot.docs) {
+  await doc.reference.delete();
+}
+
 
                     // Clear local messages
                     setState(() {

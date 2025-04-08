@@ -17,12 +17,15 @@ class SummaryQuizWidget extends StatefulWidget {
   final String topicName;
   final List quizData;
   final String? sessionPdfId;
+    final String? topicId;
+
 
   const SummaryQuizWidget({
     required this.summary,
     required this.topicName,
     required this.quizData,
     this.sessionPdfId,
+    this.topicId,
     super.key,
   });
 
@@ -143,11 +146,16 @@ class _SummaryQuizWidgetState extends State<SummaryQuizWidget> {
         floatingActionButton: InkWell(
           onTap: () async {
             // context.pushNamed('chatbot');
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return ChatbotWidget(
-                sessionPdfId: widget.sessionPdfId,
-              );
-            }));
+           Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => ChatbotWidget(
+      sessionPdfId: widget.sessionPdfId,
+      topicId: widget.topicId,
+    ),
+  ),
+);
+
           },
           child: Container(
             width: 90.0,

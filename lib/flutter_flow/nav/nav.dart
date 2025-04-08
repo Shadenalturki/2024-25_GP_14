@@ -108,7 +108,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'chatbot',
           path: '/chatbot',
-          builder: (context, params) => const ChatbotWidget(),
+builder: (context, params) => ChatbotWidget(
+  topicId: params.getParam('topicId', ParamType.String),
+  sessionPdfId: params.getParam('sessionPdfId', ParamType.String),
+),
         ),
         FFRoute(
           name: 'forgotpassword',

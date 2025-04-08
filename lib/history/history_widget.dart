@@ -68,9 +68,7 @@ Future<void> _deleteTopic(String topicId) async {
       await doc.reference.delete();
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Topic deleted successfully.')),
-    );
+    
   } catch (e) {
     print('❌ Error deleting topic: $e');
     ScaffoldMessenger.of(context).showSnackBar(
@@ -200,59 +198,47 @@ Future<void> _editTopic(BuildContext context, String topicId, String currentName
 
 
 
+Future<void> _navigateToSummaryQuiz(String topicId, String topicName) async {
+  try {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(widget.courseId)
+        .collection('summaries')
+        .where('topicName', isEqualTo: topicName)
+        .limit(1)
+        .get();
 
-  Future<void> _navigateToSummaryQuiz(String topicName) async {
-    try {
-      // Fetch the summary and quiz data from Firestore
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('courses')
-          .doc(widget.courseId)
-          .collection('summaries')
-          .where('topicName', isEqualTo: topicName)
-          .limit(1)
-          .get();
+    if (querySnapshot.docs.isNotEmpty) {
+      final summaryData = querySnapshot.docs.first.data();
+      final summary = summaryData['summary'] ?? 'No summary available';
+      final quizData = summaryData['quizData'] ?? [];
+      final sessionPdfId = summaryData['sessionPdfId']; // optional
+      final chatTopicId = summaryData['chatTopicId']; // ✅ pull it
 
-      if (querySnapshot.docs.isNotEmpty) {
-        final summaryData = querySnapshot.docs.first.data();
-        final summary = summaryData['summary'] ?? 'No summary available';
-        final quizData = summaryData['quizData'] ?? [];
 
-        print("Quiz Data:----1       $quizData");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SummaryQuizWidget(
+            summary: summary,
+            topicName: topicName,
+      quizData: quizData,
+      sessionPdfId: sessionPdfId,
+      topicId: chatTopicId, // ✅ keep this one
 
-        // Navigate to SummaryQuizWidget with fetched data
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SummaryQuizWidget(
-              summary: summary,
-              topicName: topicName,
-              quizData: quizData,
-            ),
           ),
-        );
-
-        // context.pushNamed(
-        //   'summaryQuiz',
-        //   queryParameters: {
-        //     'summary': summary,
-        //     'topicName': topicName,
-        //   },
-        //   extra: {
-        //     'quizData': quizData,
-        //   },
-        // );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No summary found for this topic.')),
-        );
-      }
-    } catch (e) {
-      print('❌ Error fetching summary and quiz: $e');
+        ),
+      );
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load summary and quiz data.')),
+        const SnackBar(content: Text('No summary found for this topic.')),
       );
     }
+  } catch (e) {
+    print('❌ Error: $e');
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -297,8 +283,12 @@ Future<void> _editTopic(BuildContext context, String topicId, String currentName
           return ListView.builder(
             itemCount: topics.length,
             itemBuilder: (context, index) {
-              final topicData = topics[index].data() as Map<String, dynamic>;
-              final topicName = topicData['topicName'];
+            final topicDoc = topics[index];
+final topicId = topicDoc.id; // Firestore document ID ✅
+final topicData = topicDoc.data() as Map<String, dynamic>;
+final topicName = topicData['topicName'];
+
+
 
               return Padding(
   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -306,7 +296,7 @@ Future<void> _editTopic(BuildContext context, String topicId, String currentName
     elevation: 5,
     borderRadius: BorderRadius.circular(20),
     child: ListTile(
-      onTap: () => _navigateToSummaryQuiz(topicName),
+onTap: () => _navigateToSummaryQuiz(topicId, topicName),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       tileColor: const Color(0xFFFDFDFD),
       title: Text(

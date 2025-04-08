@@ -67,8 +67,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   /// Save summary to Firebase
-  Future<void> _saveSummaryToFirebase(String courseId, String summary,
-      String topicName, List<dynamic> quizData) async {
+  Future<void> _saveSummaryToFirebase(
+  String courseId,
+  String summary,
+  String topicName,
+  List<dynamic> quizData,
+  String sessionPdfId,
+  String chatTopicId, // <-- add this
+) async {
     try {
       final newDocRef = FirebaseFirestore.instance
           .collection('courses')
@@ -82,6 +88,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         'topicName': topicName,
         'quizData': quizData,
         'createdAt': FieldValue.serverTimestamp(),
+        'sessionPdfId': sessionPdfId, //
+    'chatTopicId': chatTopicId, // <-- and this
+
+
       });
 
       print("✅ Summary saved for courseId: $courseId, topic: $topicName");
@@ -843,9 +853,36 @@ String _normalize(String input) {
                 String formattedSummary = formatSummaryText(summary);
                 print("Quiz Data Before Saving: $quizData");
 
+                print("Saving with sessionPdfId: $sessionPdfId");
+
+
                 // Save the summary to Firebase
-                await _saveSummaryToFirebase(
-                    courseId, formattedSummary, topicName, quizData);
+                // ✅ Step 1: Create chat topic first
+final newTopicRef = FirebaseFirestore.instance
+    .collection('chats')
+    .doc(currentUserUid)
+    .collection('topics')
+    .doc(); // Auto-generates a topic ID
+await newTopicRef.set({
+  'title': topicName,
+  'created_at': FieldValue.serverTimestamp(),
+    'courseId': courseId, // ✅ Link this topic to its course
+
+});
+final topicId = newTopicRef.id;
+
+// ✅ Step 2: Now save the summary, passing the topicId as chatTopicId
+await _saveSummaryToFirebase(
+  courseId,
+  formattedSummary,
+  topicName,
+  quizData,
+  sessionPdfId,
+  topicId,
+);
+
+
+                    
 
                 // Navigate to the summary screen with formatted text
                 print("sessionPdfId during navigatio: $sessionPdfId");
@@ -856,7 +893,9 @@ String _normalize(String input) {
                         summary: formattedSummary,
                         topicName: topicName, //fileNameWithoutExtension,
                         quizData: quizData,
-                        sessionPdfId: sessionPdfId),
+                        sessionPdfId: sessionPdfId,
+                        topicId: topicId,
+                        ),
                   ),
                 );
               } else {
