@@ -520,71 +520,124 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     return alignedLines.join('\n');
   }
 
-  Future<void> _promptForTopicAndUpload(String courseId) async {
-    TextEditingController topicController = TextEditingController();
 
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Enter Topic Name'),
-          content: TextField(
-            controller: topicController,
-            decoration: const InputDecoration(hintText: 'Topic name'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(
-                    0xFF4A4A4A), // Set color for "OK" button in error dialog
-              ),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(
-                    0xFF4A4A4A), // Set color for "OK" button in error dialog
-              ),
-              onPressed: () {
-                String trimmedTopic = topicController.text.trim();
-                if (trimmedTopic.isEmpty) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text("Error"),
-                        content: const Text("Topic name cannot be empty."),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pop(); // Close the error dialog
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: const Color(
-                                  0xFF4A4A4A), // Set color for "OK" button in error dialog
-                            ),
-                            child: const Text('OK'),
+Future<void> _promptForTopicAndUpload(String courseId) async {
+  TextEditingController topicController = TextEditingController();
+
+  List<String> topics = [];
+
+  final snapshot = await FirebaseFirestore.instance
+      .collection('courses')
+      .doc(courseId)
+      .collection('topics')
+      .orderBy('createdAt', descending: true)
+      .get();
+
+  topics = snapshot.docs.map((doc) => doc['topicName'].toString()).toList();
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Enter Topic Name'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: topicController,
+                    decoration: const InputDecoration(
+                      hintText: 'Topic name',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Existing Topics:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: topics.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 4.0), // Shift left slightly
+                          child: Row(
+                            children: [
+                              const Icon(Icons.bookmark_outline, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  topics[index],
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  Navigator.of(context).pop();
-                  _checkTopicAndUpload(courseId, trimmedTopic);
-                }
-              },
-              child: const Text('Upload'),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        );
-      },
-    );
-  }
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF4A4A4A),
+                ),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  String trimmedTopic = topicController.text.trim();
+                  if (trimmedTopic.isEmpty) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Error"),
+                          content: const Text("Topic name cannot be empty."),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF4A4A4A),
+                              ),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    Navigator.of(context).pop();
+                    _checkTopicAndUpload(courseId, trimmedTopic);
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF4A4A4A),
+                ),
+                child: const Text('Upload'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+
+
 String _normalize(String input) {
   return input
       .toLowerCase()
