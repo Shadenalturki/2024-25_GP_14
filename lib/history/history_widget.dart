@@ -16,6 +16,134 @@ class HistoryWidget extends StatefulWidget {
 }
 
 class _HistoryWidgetState extends State<HistoryWidget> {
+Future<void> _deleteTopic(String topicId) async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete Topic'),
+      content: const Text('Are you sure you want to delete this topic and its summary?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm != true) return; // User cancelled
+
+  try {
+    // 1. Get topic name first
+    final topicDoc = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(widget.courseId)
+        .collection('topics')
+        .doc(topicId)
+        .get();
+
+    final topicName = topicDoc.data()?['topicName'];
+
+    // 2. Delete the topic
+    await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(widget.courseId)
+        .collection('topics')
+        .doc(topicId)
+        .delete();
+
+    // 3. Delete related summary
+    final summaries = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(widget.courseId)
+        .collection('summaries')
+        .where('topicName', isEqualTo: topicName)
+        .get();
+
+    for (var doc in summaries.docs) {
+      await doc.reference.delete();
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Topic deleted successfully.')),
+    );
+  } catch (e) {
+    print('❌ Error deleting topic: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to delete topic.')),
+    );
+  }
+}
+
+
+
+Future<void> _editTopic(BuildContext context, String topicId, String currentName) async {
+  final controller = TextEditingController(text: currentName);
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Edit Topic'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Enter new topic name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                try {
+                  // 1. Update the topic name in topics collection
+                  await FirebaseFirestore.instance
+                      .collection('courses')
+                      .doc(widget.courseId)
+                      .collection('topics')
+                      .doc(topicId)
+                      .update({'topicName': newName});
+
+                  // 2. Update it in the summaries collection as well
+                  final summaries = await FirebaseFirestore.instance
+                      .collection('courses')
+                      .doc(widget.courseId)
+                      .collection('summaries')
+                      .where('topicName', isEqualTo: currentName)
+                      .get();
+
+                  for (var doc in summaries.docs) {
+                    await doc.reference.update({'topicName': newName});
+                  }
+
+                  Navigator.pop(context);
+
+                
+                } catch (e) {
+                  print('❌ Error updating topic: $e');
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Failed to update topic.')),
+                  );
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
   Future<void> _navigateToSummaryQuiz(String topicName) async {
     try {
       // Fetch the summary and quiz data from Firestore
@@ -116,35 +244,40 @@ class _HistoryWidgetState extends State<HistoryWidget> {
               final topicName = topicData['topicName'];
 
               return Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: Material(
-                  elevation: 5,
-                  borderRadius: BorderRadius.circular(20),
-                  child: InkWell(
-                    onTap: () => _navigateToSummaryQuiz(topicName),
-                    child: Container(
-                      height: 82,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFDFDFD),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFC5CAC6)),
-                      ),
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        topicName,
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Inter',
-                              color: Colors.black,
-                              fontSize: 25,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
+  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+  child: Material(
+    elevation: 5,
+    borderRadius: BorderRadius.circular(20),
+    child: ListTile(
+      onTap: () => _navigateToSummaryQuiz(topicName),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      tileColor: const Color(0xFFFDFDFD),
+      title: Text(
+        topicName,
+        style: FlutterFlowTheme.of(context).bodyMedium.override(
+              fontFamily: 'Inter',
+              color: Colors.black,
+              fontSize: 25,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Color(0xFF104036)),
+            onPressed: () => _editTopic(context, topics[index].id, topicName),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Color(0xFFB00020)),
+            onPressed: () => _deleteTopic(topics[index].id),
+          ),
+        ],
+      ),
+    ),
+  ),
+);
+
             },
           );
         },
