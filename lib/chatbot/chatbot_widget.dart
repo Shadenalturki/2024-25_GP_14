@@ -38,7 +38,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   @override
   void initState() {
     super.initState();
-      print("🧠 Chatbot INIT with topicId: ${widget.topicId}");
+      print("Chatbot INIT with topicId: ${widget.topicId}");
 
     _model = createModel(context, () => ChatbotModel());
     _model.textController ??= TextEditingController();
@@ -149,7 +149,7 @@ try {
     // ✅ Now we can safely get the document to inspect it
    await Future.delayed(Duration(seconds: 1)); // wait a bit
 final savedDoc = await docRef.get();
-print("🔥 Saved Message Timestamp: ${savedDoc['timestamp']}");
+print(" Saved Message Timestamp: ${savedDoc['timestamp']}");
 
   } catch (e) {
     print('Error saving message to Firestore: $e');
