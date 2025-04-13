@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'calendar_model.dart';
 export 'calendar_model.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:summ_a_ize/notification_service.dart';
+
 
 class CalendarWidget extends StatefulWidget {
   const CalendarWidget({super.key});
@@ -211,6 +213,27 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         .collection('events')
                         .add(event);
 
+
+final baseId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+// ⏰ Notify 24 hours before the event
+await NotificationService.scheduleNotification(
+  id: baseId,
+  title: 'Event Tomorrow',
+  body: '$title is happening in 24 hours!',
+  scheduledTime: eventDateTime.subtract(const Duration(hours: 24)),
+);
+
+// ⏰ Notify 10 minutes before the event
+await NotificationService.scheduleNotification(
+  id: baseId + 1,
+  title: 'Event Reminder',
+  body: '$title starts in 10 minutes!',
+  scheduledTime: eventDateTime.subtract(const Duration(minutes: 10)),
+);
+
+
+
                     // Refresh events in the model
                     await _model.fetchEvents();
 
@@ -220,6 +243,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   },
                   child: const Text('Add'),
                 ),
+                
               ],
             );
           },

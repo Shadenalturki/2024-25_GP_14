@@ -10,6 +10,8 @@ import "/flutter_flow/flutter_flow_theme.dart";
 import 'flutter_flow/flutter_flow_util.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'index.dart';
+import 'notification_service.dart';
+
 
 //test
 void main() async {
@@ -20,6 +22,8 @@ void main() async {
   await initFirebase();
 
   await FlutterFlowTheme.initialize();
+  await NotificationService.initialize();
+
 
   runApp(const MyApp());
 }
