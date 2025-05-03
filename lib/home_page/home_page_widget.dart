@@ -613,7 +613,13 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                 left: 4.0), // Shift left slightly
                             child: Row(
                               children: [
-                                const Icon(Icons.bookmark_outline, size: 18),
+                                Image.asset(
+                                    'assets/images/topic.jpg',
+                                    width: 18,
+                                    height: 18,
+                                    fit: BoxFit.contain,
+                                  ),
+
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
