@@ -68,13 +68,13 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
   /// Save summary to Firebase
   Future<void> _saveSummaryToFirebase(
-  String courseId,
-  String summary,
-  String topicName,
-  List<dynamic> quizData,
-  String sessionPdfId,
-  String chatTopicId, // <-- add this
-) async {
+    String courseId,
+    String summary,
+    String topicName,
+    List<dynamic> quizData,
+    String sessionPdfId,
+    String chatTopicId, // <-- add this
+  ) async {
     try {
       final newDocRef = FirebaseFirestore.instance
           .collection('courses')
@@ -89,9 +89,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         'quizData': quizData,
         'createdAt': FieldValue.serverTimestamp(),
         'sessionPdfId': sessionPdfId, //
-    'chatTopicId': chatTopicId, // <-- and this
-
-
+        'chatTopicId': chatTopicId, // <-- and this
       });
 
       print("✅ Summary saved for courseId: $courseId, topic: $topicName");
@@ -144,17 +142,47 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
     try {
       // Check if a course with the same name already exists
-      final querySnapshot = await FirebaseFirestore.instance
+      final normalizedNewCourseName = _normalize(courseName);
+
+      final existingCourses = await FirebaseFirestore.instance
           .collection('courses')
           .where('userId', isEqualTo: userId)
-          .where('courseName', isEqualTo: courseName)
           .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        // Show error pop-up if a duplicate course is found
-        _showErrorDialog(
-            'Duplicate Course', 'A course with this name already exists.');
-        return;
+      final existingNormalizedNames = existingCourses.docs
+          .map((doc) => _normalize(doc['courseName']))
+          .toList();
+
+      if (existingNormalizedNames.contains(normalizedNewCourseName)) {
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Similar Course Found'),
+              content: const Text(
+                'A course with a similar name already exists. Do you still want to add it?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.green,
+                  ),
+                  child: const Text('Add Anyway'),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (proceed != true) return; // User chose to cancel
       }
 
       // Create a new document reference to get a unique courseId
@@ -423,16 +451,20 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   if (userId != null) {
                     try {
                       // Check if a course with the same name exists (excluding the current one)
+                      final normalizedUpdatedName =
+                          _normalize(updatedCourseName);
+
                       final querySnapshot = await FirebaseFirestore.instance
                           .collection('courses')
                           .where('userId', isEqualTo: userId)
-                          .where('courseName', isEqualTo: updatedCourseName)
                           .get();
 
-                      // Check if duplicate exists and is not the current course
-                      bool isDuplicate = querySnapshot.docs.any(
-                        (doc) => doc.id != courses[index]['courseId'],
-                      );
+                      bool isDuplicate = querySnapshot.docs.any((doc) {
+                        final existingName = doc['courseName'];
+                        final normalizedExisting = _normalize(existingName);
+                        return doc.id != courses[index]['courseId'] &&
+                            normalizedExisting == normalizedUpdatedName;
+                      });
 
                       if (isDuplicate) {
                         // Show error pop-up if duplicate found
@@ -530,175 +562,175 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     return alignedLines.join('\n');
   }
 
+  Future<void> _promptForTopicAndUpload(String courseId) async {
+    TextEditingController topicController = TextEditingController();
 
-Future<void> _promptForTopicAndUpload(String courseId) async {
-  TextEditingController topicController = TextEditingController();
+    List<String> topics = [];
 
-  List<String> topics = [];
+    final snapshot = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(courseId)
+        .collection('topics')
+        .orderBy('createdAt', descending: true)
+        .get();
 
-  final snapshot = await FirebaseFirestore.instance
-      .collection('courses')
-      .doc(courseId)
-      .collection('topics')
-      .orderBy('createdAt', descending: true)
-      .get();
+    topics = snapshot.docs.map((doc) => doc['topicName'].toString()).toList();
 
-  topics = snapshot.docs.map((doc) => doc['topicName'].toString()).toList();
-
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Enter Topic Name'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: topicController,
-                    decoration: const InputDecoration(
-                      hintText: 'Topic name',
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Enter Topic Name'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: topicController,
+                      decoration: const InputDecoration(
+                        hintText: 'Topic name',
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Existing Topics:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    const SizedBox(height: 16),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Existing Topics:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: topics.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 4.0), // Shift left slightly
-                          child: Row(
-                            children: [
-                              const Icon(Icons.bookmark_outline, size: 18),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  topics[index],
-                                  style: const TextStyle(fontSize: 14),
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: topics.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                                left: 4.0), // Shift left slightly
+                            child: Row(
+                              children: [
+                                const Icon(Icons.bookmark_outline, size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    topics[index],
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
                                 ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF4A4A4A),
+                  ),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    String trimmedTopic = topicController.text.trim();
+                    if (trimmedTopic.isEmpty) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text("Error"),
+                            content: const Text("Topic name cannot be empty."),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF4A4A4A),
+                                ),
+                                child: const Text('OK'),
                               ),
                             ],
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      );
+                    } else {
+                      Navigator.of(context).pop();
+                      _checkTopicAndUpload(courseId, trimmedTopic);
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF4A4A4A),
                   ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF4A4A4A),
+                  child: const Text('Upload'),
                 ),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  String trimmedTopic = topicController.text.trim();
-                  if (trimmedTopic.isEmpty) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text("Error"),
-                          content: const Text("Topic name cannot be empty."),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF4A4A4A),
-                              ),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  } else {
-                    Navigator.of(context).pop();
-                    _checkTopicAndUpload(courseId, trimmedTopic);
-                  }
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF4A4A4A),
-                ),
-                child: const Text('Upload'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-
-
-String _normalize(String input) {
-  return input
-      .toLowerCase()
-      .replaceAll(RegExp(r'\s+'), '') // removes all spaces
-      .trim();
-}
-
-  Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
-  final normalizedInput = _normalize(topicName);
-
-  // Fetch all existing topic names for this course
-  final querySnapshot = await FirebaseFirestore.instance
-      .collection('courses')
-      .doc(courseId)
-      .collection('topics')
-      .get();
-
-  final existingNames = querySnapshot.docs
-      .map((doc) => _normalize(doc['topicName']))
-      .toList();
-
-  if (existingNames.contains(normalizedInput)) {
-    // Show error if normalized name already exists
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Error"),
-          content: const Text(
-              "This topic name already exists for this course. Please choose a different name."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF4A4A4A),
-              ),
-              child: const Text('OK'),
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );
-    return;
   }
 
-  // Proceed if no duplicates found
-  _uploadFile(courseId, topicName);
-}
+  String _normalize(String input) {
+    return input
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), '') // Remove all spaces
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove special characters
+        .trim();
+  }
 
+  Future<void> _checkTopicAndUpload(String courseId, String topicName) async {
+    final normalizedInput = _normalize(topicName);
+
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(courseId)
+        .collection('topics')
+        .get();
+
+    final existingNames =
+        querySnapshot.docs.map((doc) => _normalize(doc['topicName'])).toList();
+
+    if (existingNames.contains(normalizedInput)) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Similar Topic Found'),
+          content: const Text(
+            'A topic with a similar name already exists in this course. Do you still want to add it?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF4A4A4A),
+              ),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.green,
+              ),
+              child: const Text('Add Anyway'),
+            ),
+          ],
+        ),
+      );
+
+      if (proceed != true) return;
+    }
+
+    // Proceed with upload
+    _uploadFile(courseId, topicName);
+  }
 
   late List quizData = [];
   Future<void> _uploadFile(String courseId, String topicName) async {
@@ -855,34 +887,29 @@ String _normalize(String input) {
 
                 print("Saving with sessionPdfId: $sessionPdfId");
 
-
                 // Save the summary to Firebase
                 // ✅ Step 1: Create chat topic first
-final newTopicRef = FirebaseFirestore.instance
-    .collection('chats')
-    .doc(currentUserUid)
-    .collection('topics')
-    .doc(); // Auto-generates a topic ID
-await newTopicRef.set({
-  'title': topicName,
-  'created_at': FieldValue.serverTimestamp(),
-    'courseId': courseId, // ✅ Link this topic to its course
-
-});
-final topicId = newTopicRef.id;
+                final newTopicRef = FirebaseFirestore.instance
+                    .collection('chats')
+                    .doc(currentUserUid)
+                    .collection('topics')
+                    .doc(); // Auto-generates a topic ID
+                await newTopicRef.set({
+                  'title': topicName,
+                  'created_at': FieldValue.serverTimestamp(),
+                  'courseId': courseId, // ✅ Link this topic to its course
+                });
+                final topicId = newTopicRef.id;
 
 // ✅ Step 2: Now save the summary, passing the topicId as chatTopicId
-await _saveSummaryToFirebase(
-  courseId,
-  formattedSummary,
-  topicName,
-  quizData,
-  sessionPdfId,
-  topicId,
-);
-
-
-                    
+                await _saveSummaryToFirebase(
+                  courseId,
+                  formattedSummary,
+                  topicName,
+                  quizData,
+                  sessionPdfId,
+                  topicId,
+                );
 
                 // Navigate to the summary screen with formatted text
                 print("sessionPdfId during navigatio: $sessionPdfId");
@@ -890,12 +917,12 @@ await _saveSummaryToFirebase(
                   context,
                   MaterialPageRoute(
                     builder: (context) => SummaryQuizWidget(
-                        summary: formattedSummary,
-                        topicName: topicName, //fileNameWithoutExtension,
-                        quizData: quizData,
-                        sessionPdfId: sessionPdfId,
-                        topicId: topicId,
-                        ),
+                      summary: formattedSummary,
+                      topicName: topicName, //fileNameWithoutExtension,
+                      quizData: quizData,
+                      sessionPdfId: sessionPdfId,
+                      topicId: topicId,
+                    ),
                   ),
                 );
               } else {
