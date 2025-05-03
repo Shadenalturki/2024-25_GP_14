@@ -55,7 +55,8 @@ class _HistoryWidgetState extends State<HistoryWidget> {
   String _normalize(String input) {
     return input
         .toLowerCase()
-        .replaceAll(RegExp(r'\s+'), '') // remove ALL spaces
+        .replaceAll(RegExp(r'\s+'), '') // Remove all spaces
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove special characters
         .trim();
   }
 
@@ -90,7 +91,6 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                     if (normalizedNewName.isEmpty) return;
 
                     try {
-                      // 1. Get all existing topic names for this course except the one being edited
                       final topicsSnapshot = await FirebaseFirestore.instance
                           .collection('courses')
                           .doc(widget.courseId)
@@ -103,27 +103,41 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                               _normalize(doc.data()['topicName'] as String))
                           .toList();
 
-                      // 2. Check for duplicates (ignore case & spaces)
                       if (existingNames.contains(normalizedNewName)) {
-                        await showDialog(
+                        // ❗ Close Edit Dialog First
+                        Navigator.of(context).pop();
+
+                        // ❗ Then open confirmation dialog
+                        final proceed = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: const Text('Error'),
+                            title: const Text('Similar Topic Found'),
                             content: const Text(
-                              'This topic name already exists for this course. Please choose a different name.',
+                              'A topic with a similar name already exists. Do you still want to update it?',
                             ),
                             actions: [
                               TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('OK'),
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.green,
+                                ),
+                                child: const Text('Update Anyway'),
                               ),
                             ],
                           ),
                         );
-                        return;
+
+                        if (proceed != true) return; // User cancelled
+                      } else {
+                        // No duplicate → close Edit Dialog manually
+                        Navigator.of(context).pop();
                       }
 
-                      // 3. Update topic name in 'topics'
+                      // Now update Firestore
                       await FirebaseFirestore.instance
                           .collection('courses')
                           .doc(widget.courseId)
@@ -131,7 +145,7 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                           .doc(topicId)
                           .update({'topicName': newName});
 
-                      // 4. Update topic name in 'summaries'
+                      // Update summaries
                       final summaries = await FirebaseFirestore.instance
                           .collection('courses')
                           .doc(widget.courseId)
@@ -142,11 +156,8 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                       for (var doc in summaries.docs) {
                         await doc.reference.update({'topicName': newName});
                       }
-
-                      Navigator.pop(context); // close the edit dialog
                     } catch (e) {
                       print('❌ Error updating topic: $e');
-                      Navigator.pop(context); // close the edit dialog
                       await showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
