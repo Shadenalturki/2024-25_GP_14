@@ -524,7 +524,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               style: TextButton.styleFrom(
                 foregroundColor: const Color(0xFF4A4A4A), // Dark grey text
               ),
-              child: const Text('Save'),
+              child: const Text('Save',
+                         style: TextStyle(
+                         color: Colors.green, // Change to any color you want
+                         ),),
             ),
           ],
         );
@@ -1321,7 +1324,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                                       foregroundColor:
                                                           Colors.black,
                                                     ),
-                                                    child: const Text('Delete'),
+                                                    child: const Text('Delete',
+                         style: TextStyle(
+                         color: Colors.red, // Change to any color you want
+                         ),),
                                                   ),
                                                 ],
                                               );

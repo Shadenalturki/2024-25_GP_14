@@ -429,11 +429,17 @@ print(" Saved Message Timestamp: ${savedDoc['timestamp']}");
                       actions: <Widget>[
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('Cancel'),
+                          child: const Text('Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),),
                         ),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Clear'),
+                          child: const Text('Clear',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),),
                         ),
                       ],
                     );

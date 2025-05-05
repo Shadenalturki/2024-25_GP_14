@@ -25,7 +25,10 @@ class _HistoryWidgetState extends State<HistoryWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: const Text('Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -80,7 +83,11 @@ class _HistoryWidgetState extends State<HistoryWidget> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child: const Text('Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),
+                         ),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -118,7 +125,10 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
+                                child: const Text('Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(context, true),
@@ -173,7 +183,10 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                       );
                     }
                   },
-                  child: const Text('Save'),
+                  child: const Text('Save' ,
+                         style: TextStyle(
+                         color:Colors.green, // Change to any color you want
+                         ),),
                 ),
               ],
             );
@@ -368,7 +381,10 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.of(context).pop(false),
-                                          child: const Text('Cancel'),
+                                          child: const Text('Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),),
                                         ),
                                         TextButton(
                                           onPressed: () =>

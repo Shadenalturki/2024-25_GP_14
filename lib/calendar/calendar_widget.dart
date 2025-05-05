@@ -148,6 +148,31 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
                         initialTime: selectedTime ?? TimeOfDay.now(),
+                         builder: (BuildContext context, Widget? child) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        timePickerTheme: TimePickerThemeData(
+          //backgroundColor: Color(0xFFE8F5E9),
+        dialBackgroundColor: Color.fromARGB(255, 224, 228, 225),
+        dialHandColor: Color(0xFF104036),
+        hourMinuteTextColor: Color(0xFF104036),
+        dayPeriodTextColor: Color(0xFF104036),
+        ),
+         textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF104036), // Color for OK and CANCEL
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        // 🅰️ General text styling if needed
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF104036), // Used for selected time and accents
+          onSurface: Colors.black, // Default text color
+        ),
+      ),
+      child: child!,
+    );
+  },
                       );
 
                       if (pickedTime != null) {
@@ -167,7 +192,12 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
+                  child: const Text(
+                         'Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),
+                      ),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -241,7 +271,12 @@ await NotificationService.scheduleNotification(
 
                     Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: const Text('Add'),
+                  child: const Text(
+                         'Add',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),
+                      ),
                 ),
                 
               ],
@@ -360,11 +395,17 @@ await NotificationService.scheduleNotification(
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Cancel'),
+                              child: const Text('Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Delete'),
+                              child: const Text('Delete',
+                         style: TextStyle(
+                         color: Colors.red, // Change to any color you want
+                         ),),
                             ),
                           ],
                         );
@@ -479,6 +520,31 @@ await NotificationService.scheduleNotification(
                       TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
                         initialTime: selectedTime ?? TimeOfDay.now(),
+                         builder: (BuildContext context, Widget? child) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        timePickerTheme: TimePickerThemeData(
+          //backgroundColor: Color(0xFFE8F5E9),
+        dialBackgroundColor: Color.fromARGB(255, 224, 228, 225),
+        dialHandColor: Color(0xFF104036),
+        hourMinuteTextColor: Color(0xFF104036),
+        dayPeriodTextColor: Color(0xFF104036),
+        ),
+         textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF104036), // Color for OK and CANCEL
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        // 🅰️ General text styling if needed
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF104036), // Used for selected time and accents
+          onSurface: Colors.black, // Default text color
+        ),
+      ),
+      child: child!,
+    );
+  },
                       );
 
                       if (pickedTime != null) {
@@ -498,7 +564,10 @@ await NotificationService.scheduleNotification(
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
+                  child: const Text('Cancel',
+                         style: TextStyle(
+                         color: Color(0xFF4A4A4A), // Change to any color you want
+                         ),),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -551,7 +620,10 @@ await NotificationService.scheduleNotification(
 
                     Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: const Text('Save'),
+                  child: const Text('Save',
+                         style: TextStyle(
+                         color: Colors.green, // Change to any color you want
+                         ),),
                 ),
               ],
             );
