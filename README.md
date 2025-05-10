@@ -24,4 +24,7 @@ https://github.com/Shadenalturki/2024-25_GP_14
 • Turn on an Android Emulator or connect an android mobile to your computer using
 USB.
 
-• Befor you Run SummAIze application, run the SummAIzeApp.ipynp in colab using GPU , if colab ask for access hugging face token use this HF_token=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.
+• Befor you Run SummAIze application, run the flask_rag_notebook_(1).ipynb in colab , if colab ask for access hugging face token use this HF_token=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.
+
+after install the first cell it will ask to restart session , restart then run all .
+
